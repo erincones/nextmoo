@@ -1,0 +1,46 @@
+{
+  "env": {
+    "es6": true,
+    "node": true,
+    "browser": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "rules": {
+    "semi": "error",
+    "quotes": "off",
+    "indent": [ "error", 2, { "SwitchCase": 1 } ],
+    "@typescript-eslint/quotes": [ "error", "backtick" ],
+    "react/jsx-filename-extension": [ 1, { "extensions": [ ".js", ".jsx", ".tsx" ] } ]
+  },
+  "overrides": [
+    {
+      "files": [ "*.tsx" ],
+      "extends": [
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "plugins": [
+        "@typescript-eslint",
+        "react-hooks"
+      ],
+      "rules": {
+        "react/jsx-uses-react": "off",
+        "react/react-in-jsx-scope": "off",
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "warn"
+      }
+    }
+  ]
+}

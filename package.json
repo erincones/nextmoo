@@ -1,0 +1,44 @@
+{
+  "name": "nextmoo",
+  "version": "0.1.0",
+  "description": "Another web version of cowsay powered by Next.js",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erincones/nextmoo.git"
+  },
+  "author": "Erick Rincones <erick.rincones@ciens.ucv.ve>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erincones/nextmoo/issues"
+  },
+  "homepage": "https://github.com/erincones/nextmoo#readme",
+  "dependencies": {
+    "next": "10.0.0",
+    "postcss-flexbugs-fixes": "^5.0.0",
+    "postcss-import": "^13.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "sass": "^1.28.0",
+    "tailwindcss": "^1.9.6"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.6",
+    "@types/react": "^16.9.55",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/parser": "^4.6.0",
+    "eslint": "^7.12.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "stylelint": "^13.7.2",
+    "stylelint-config-recommended": "^3.0.0",
+    "stylelint-scss": "^3.18.0",
+    "typescript": "^4.0.5"
+  }
+}
