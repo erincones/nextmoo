@@ -1,9 +1,16 @@
+import { SEO } from "../components/seo";
+
+
 /**
  * Home component
  */
 const Home = (): JSX.Element => {
   return (
-    <p>moo!</p>
+    <>
+      <SEO title="Moo!" />
+
+      <p>moo!</p>
+    </>
   );
 };
 
