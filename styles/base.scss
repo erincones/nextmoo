@@ -1,2 +1,27 @@
 // Base styles
 @tailwind base;
+
+// DejaVu Sans Mono font face
+@font-face {
+  font-family: DejaVu Sans Mono;
+  src: url(../fonts/DejaVuSansMono.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: DejaVu Sans Mono;
+  font-style: italic;
+  src: url(../fonts/DejaVuSansMono-Oblique.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: DejaVu Sans Mono;
+  font-weight: 700;
+  src: url(../fonts/DejaVuSansMono-Bold.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: DejaVu Sans Mono;
+  font-weight: 700;
+  font-style: italic;
+  src: url(../fonts/DejaVuSansMono-BoldOblique.ttf) format("truetype");
+}
