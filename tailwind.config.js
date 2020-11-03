@@ -54,6 +54,21 @@ module.exports = {
       },
       lineHeight: {
         terminal: `1.1875rem`
+      },
+      spacing: {
+        ch: `1ch`,
+        "1/7": `14.2857%`,
+        "2/7": `28.5714%`,
+        "3/7": `42.8571%`,
+        "4/7": `57.1429%`,
+        "5/7": `71.4286%`,
+        "6/7": `85.7143%`
+      },
+      width: {
+        "max-content": `max-content`
+      },
+      minHeight: {
+        "10": `2.5rem`
       }
     }
   },
