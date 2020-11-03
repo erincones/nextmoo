@@ -5,9 +5,9 @@ import Head from "next/head";
  * SEO properties
  */
 interface SEOProps {
-  title: string,
-  twitterCard?: boolean,
-  openGraph?: boolean
+  readonly title: string,
+  readonly twitterCard?: boolean,
+  readonly openGraph?: boolean
 }
 
 
