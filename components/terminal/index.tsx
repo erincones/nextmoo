@@ -1,4 +1,5 @@
-import { useState, useCallback, KeyboardEvent, ClipboardEvent } from "react";
+import { useState, useCallback, KeyboardEvent, ClipboardEvent, MouseEvent } from "react";
+
 import { Prompt } from "./prompt";
 
 
@@ -20,8 +21,10 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
 
 
   // Terminal click handler
-  const handleTerminalClick = useCallback(() => {
-    document.getElementById(`command`).focus();
+  const handleTerminalClick = useCallback((e: MouseEvent<HTMLElement>) => {
+    if (e.target === e.currentTarget) {
+      document.getElementById(`command`).focus();
+    }
   }, []);
 
 
@@ -51,13 +54,19 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
   }, []);
 
 
-  // Return terminal
+  // Return terminal component
   return (
-    <div className="flex flex-col cursor-text px-px w-full md:w-7/12">
-      <pre className="select-all whitespace-pre overflow-x-auto">{cow}</pre>
-      <div onClick={handleTerminalClick} className="flex flex-col flex-grow">
+    <div className="flex flex-col flex-grow cursor-text px-px w-full md:w-7/12">
+      {/* Cow */}
+      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
+        {cow}
+      </pre>
+
+      {/* Output and input */}
+      <div className="flex flex-col flex-grow overflow-y-auto">
         {output}
-        <div className="flex-grow">
+
+        <div onClick={handleTerminalClick} className="flex-grow">
           <Prompt className="inline break-all whitespace-pre-wrap" />
           <pre id="command" autoCapitalize="none" spellCheck={false} contentEditable tabIndex={0} onKeyDown={handleCommandKeyDown} onPaste={handleCommandPaste} className="inline bg-black text-white break-all whitespace-pre-wrap focus:outline-none w-full" />
         </div>

@@ -39,13 +39,13 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
   const [ tongue, setTongue ] = useState(``);
   const [ wrapColumn, setWrapColumn ] = useState(30);
   const [ noWrap, setNoWrap ] = useState(false);
-  const [ message, setMessage ] = useState(`moo!`);
+  const [ message, setMessage ] = useState(``);
 
 
   // Action change handler
   const handleActionChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setAction(e.target.value === `say` ? `say` : `think`);
+    if (e.currentTarget.checked) {
+      setAction(e.currentTarget.value === `say` ? `say` : `think`);
     }
   }, []);
 
@@ -74,24 +74,24 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
 
   // Tongue change handler
   const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setEyes(clamp(e.target.value, e.target.selectionStart > 2));
+    setEyes(clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2));
   }, []);
 
   // Tongue change handler
   const handleTongueChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setTongue(clamp(e.target.value, e.target.selectionStart > 2));
+    setTongue(clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2));
   }, []);
 
 
   // Wrap column change handler
   const handleWrapColumnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (/^\d*$|^0x[\dA-Fa-f]+$/.test(e.target.value)) {
-      const value = parseInt(e.target.value);
+    if (/^\d*$|^0x[\dA-Fa-f]+$/.test(e.currentTarget.value)) {
+      const value = parseInt(e.currentTarget.value);
 
       if (value >= 0) {
         setWrapColumn(value);
       }
-      else if (e.target.value.length === 0) {
+      else if (e.currentTarget.value.length === 0) {
         setWrapColumn(0);
       }
     }
@@ -110,7 +110,7 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
 
   // No wrap change handler
   const handleNoWrapChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setNoWrap(e.target.checked);
+    setNoWrap(e.currentTarget.checked);
   }, []);
 
   // No wrap label click
@@ -126,9 +126,15 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
 
   // Message change handler
   const handleMessageChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
+    setMessage(e.currentTarget.value);
   }, []);
 
+
+  // Initialize and focus message
+  useEffect(() => {
+    setMessage(`moo!`);
+    document.getElementById(`message`).focus();
+  }, []);
 
   // Update cow
   useEffect(() => {

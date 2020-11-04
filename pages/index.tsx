@@ -17,7 +17,7 @@ const Home = (): JSX.Element => {
     <>
       <SEO title="Moo!" />
 
-      <div className="flex flex-col md:flex-row-reverse md:min-h-screen">
+      <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
         <Controls handleCow={setCow} />
         <Terminal cow={cow} />
       </div>
