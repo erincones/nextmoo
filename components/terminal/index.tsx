@@ -64,6 +64,10 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
 
       {/* Output and input */}
       <div className="flex flex-col flex-grow overflow-y-auto">
+        <Prompt className="inline break-all whitespace-pre-wrap">help</Prompt>
+        <pre className="break-all whitespace-pre-wrap">Moo! Developed by Erick Rincones.</pre>
+        <pre className="break-all whitespace-pre-wrap">Special thanks to Aury Rincones.</pre>
+        <pre className="break-all whitespace-pre-wrap">Licensed under the <a href="#" className="underline focus:outline-none">MIT license</a>.</pre>
         {output}
 
         <div onClick={handleTerminalClick} className="flex-grow">
