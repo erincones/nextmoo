@@ -18,29 +18,29 @@
     "eslint:recommended",
     "plugin:react/recommended"
   ],
+  "plugins": [
+    "react-hooks"
+  ],
   "rules": {
     "semi": "error",
     "quotes": "off",
     "indent": [ "error", 2, { "SwitchCase": 1 } ],
     "@typescript-eslint/quotes": [ "error", "backtick" ],
-    "react/jsx-filename-extension": [ 1, { "extensions": [ ".js", ".jsx", ".tsx" ] } ]
+    "react/jsx-filename-extension": [ 1, { "extensions": [ ".js", ".jsx", ".tsx" ] } ],
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   "overrides": [
     {
-      "files": [ "*.tsx" ],
+      "files": [ "*.ts", "*.tsx" ],
       "extends": [
         "plugin:@typescript-eslint/recommended"
       ],
       "plugins": [
-        "@typescript-eslint",
-        "react-hooks"
-      ],
-      "rules": {
-        "react/jsx-uses-react": "off",
-        "react/react-in-jsx-scope": "off",
-        "react-hooks/rules-of-hooks": "error",
-        "react-hooks/exhaustive-deps": "warn"
-      }
+        "@typescript-eslint"
+      ]
     }
   ]
 }

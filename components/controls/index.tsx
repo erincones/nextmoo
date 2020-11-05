@@ -1,17 +1,14 @@
-import { useState, useCallback, ChangeEvent, WheelEvent, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, ChangeEvent, WheelEvent } from "react";
+
+import { cows, modes, getFace, getMode, MooOptions } from "../../lib/moo";
 
 
 /**
  * Controls component properties
  */
 interface ControlsProps {
-  readonly handleCow?: (cow: string) => void;
+  readonly onChange?: (message: string, options: MooOptions) => void;
 }
-
-/**
- * Action type
- */
-type action = `say` | `think`;
 
 
 /**
@@ -19,13 +16,8 @@ type action = `say` | `think`;
  *
  * @param str String to clamp
  */
-const clamp = (str: string, last = false) => {
-  if (str.length < 3) {
-    return str;
-  }
-
-  return last ? str.slice(str.length - 2, str.length) : str.slice(0, 2);
-};
+const clamp = (str: string, last = false) =>
+  str.length < 3 ? str : last ? str.slice(str.length - 2, str.length) : str.slice(0, 2);
 
 
 /**
@@ -33,13 +25,40 @@ const clamp = (str: string, last = false) => {
  *
  * @param props Controls component properties
  */
-export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.Element => {
-  const [ action, setAction ] = useState<action>(`say`);
+export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.Element => {
+  const [ action, setAction ] = useState<MooOptions["action"]>(`say`);
+  const [ cow, setCow ] = useState(`default`);
+  const [ mode, setMode ] = useState(`u`);
   const [ eyes, setEyes ] = useState(`oo`);
   const [ tongue, setTongue ] = useState(``);
   const [ wrapColumn, setWrapColumn ] = useState(30);
   const [ noWrap, setNoWrap ] = useState(false);
   const [ message, setMessage ] = useState(``);
+
+
+  // Cows options
+  const cowsOptions = useMemo(() =>
+    cows.map(({ name }, i) => (
+      <option key={i} value={name}>
+        {`${name[0].toUpperCase()}${name.slice(1).replace(/[.-]/g, ` `)}`}
+      </option>
+    ))
+  , []);
+
+  // Modes options
+  const modesOptions = useMemo(() =>
+    [ <option key={-1} value="c" hidden>Custom</option> ].concat(modes.map(({ id, name }, i) => (
+      <option key={i} value={id}>
+        {`${name[0].toUpperCase()}${name.slice(1)}`}
+      </option>
+    )))
+  , []);
+
+
+  // Cow change handler
+  const handleCowChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    setCow(e.currentTarget.value);
+  }, []);
 
 
   // Action change handler
@@ -72,15 +91,31 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
   }, []);
 
 
+  // Mode change handler
+  const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
+    setMode(e.currentTarget.value);
+
+    const face = getFace(e.currentTarget.value);
+    setEyes(face.eyes);
+    setTongue(face.tongue.padEnd(2));
+  }, []);
+
+
   // Tongue change handler
   const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setEyes(clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2));
-  }, []);
+    const eyes = clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2);
+
+    setEyes(eyes);
+    setMode(getMode(eyes, tongue));
+  }, [ tongue ]);
 
   // Tongue change handler
   const handleTongueChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setTongue(clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2));
-  }, []);
+    const tongue = clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2);
+
+    setTongue(tongue);
+    setMode(getMode(eyes, tongue));
+  }, [ eyes ]);
 
 
   // Wrap column change handler
@@ -138,9 +173,8 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
 
   // Update cow
   useEffect(() => {
-    const cow = JSON.stringify({ action, eyes, tongue, wrapColumn, noWrap, message }, null, 2);
-    handleCow(cow);
-  }, [ action, eyes, tongue, wrapColumn, noWrap, message, handleCow ]);
+    onChange(message, { action, cow, eyes, tongue, wrap: noWrap ? undefined : wrapColumn });
+  }, [ message, action, cow, eyes, tongue, wrapColumn, noWrap, onChange ]);
 
 
   // Return controls component
@@ -154,8 +188,8 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
             <legend className="cursor-default px-1">
               <label htmlFor="cow">Cow</label>
             </legend>
-            <select id="cow" className="bg-transparent text-white align-middle focus:bg-white focus:text-black focus:outline-none appearance-none w-full">
-              <option>Default</option>
+            <select id="cow" value={cow} onChange={handleCowChange} className="bg-transparent text-white align-middle focus:bg-white focus:text-black focus:outline-none appearance-none w-full">
+              {cowsOptions}
             </select>
           </fieldset>
 
@@ -185,8 +219,8 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
             <legend className="cursor-default px-1">
               <label htmlFor="mode">Mode</label>
             </legend>
-            <select id="mode" className="bg-transparent text-white align-middle focus:bg-white focus:text-black focus:outline-none appearance-none w-full">
-              <option>Default</option>
+            <select id="mode" value={mode} onChange={handleModeChange} className="bg-transparent text-white align-middle focus:bg-white focus:text-black focus:outline-none appearance-none w-full">
+              {modesOptions}
             </select>
           </fieldset>
 
@@ -199,7 +233,7 @@ export const Controls = ({ handleCow = () => { return; } }: ControlsProps): JSX.
               <input id="eyes" type="text" value={eyes} autoCapitalize="none" spellCheck={false} onChange={handleEyesChange} className="bg-transparent text-white focus:outline-none w-full" />
             </fieldset>
 
-            {/* Eyes */}
+            {/* Tongue */}
             <fieldset className="border border-white px-2 pb-2 ml-4 w-4/7">
               <legend className="cursor-default px-1">
                 <label htmlFor="tongue">Tongue</label>
