@@ -1,10 +1,12 @@
-import { useState, useMemo, useCallback, useEffect, ChangeEvent } from "react";
+import { useState, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/router";
 
+import { Radio as Radio } from "./radio";
 import { Spinbox } from "./spinbox";
 
 import { cows, modes, getFace, getMode, MooOptions } from "../../lib/moo";
 import { parseOptions } from "../../utils/parse-options";
+import { Checkbox } from "./checkbox";
 
 
 /**
@@ -60,41 +62,15 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
   , []);
 
 
+  // Submit handler
+  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  }, []);
+
   // Cow change handler
   const handleCowChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setCow(e.currentTarget.value);
   }, []);
-
-
-  // Action change handler
-  const handleActionChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (e.currentTarget.checked) {
-      setAction(e.currentTarget.value === `say` ? `say` : `think`);
-    }
-  }, []);
-
-
-  // Say label click
-  const handleSayLabelClick = useCallback(() => {
-    document.getElementById(`sayButton`).focus();
-  }, []);
-
-  // Say click handler
-  const handleSayClick = useCallback(() => {
-    setAction(`say`);
-  }, []);
-
-
-  // Think label click
-  const handleThinkLabelClick = useCallback(() => {
-    document.getElementById(`thinkButton`).focus();
-  }, []);
-
-  // Think click handler
-  const handleThinkClick = useCallback(() => {
-    setAction(`think`);
-  }, []);
-
 
   // Mode change handler
   const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
@@ -104,7 +80,6 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
     setEyes(face.eyes);
     setTongue(face.tongue.padEnd(2));
   }, []);
-
 
   // Tongue change handler
   const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -121,23 +96,6 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
     setTongue(tongue);
     setMode(getMode(eyes, tongue));
   }, [ eyes ]);
-
-
-  // No wrap change handler
-  const handleNoWrapChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setNoWrap(e.currentTarget.checked);
-  }, []);
-
-  // No wrap label click
-  const handleNoWrapLabelClick = useCallback(() => {
-    document.getElementById(`noWrapButton`).focus();
-  }, []);
-
-  // No wrap click handler
-  const handleNoWrapClick = useCallback(() => {
-    setNoWrap(noWrap => !noWrap);
-  }, []);
-
 
   // Message change handler
   const handleMessageChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -200,7 +158,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
 
   // Return controls component
   return (
-    <div className="flex flex-col p-2 w-full md:w-5/12 min-h-full">
+    <form noValidate onSubmit={handleSubmit} className="flex flex-col p-2 w-full md:w-5/12 min-h-full">
       {/* Options */}
       <div className="leading-none">
         <div className="flex mb-2">
@@ -218,18 +176,12 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
             <legend className="cursor-default px-1">Action</legend>
             <div className="flex">
-              <div className="bg-transparent pr-2 w-3/7">
-                <input id="say" type="radio" name="action" value="say" checked={action === `say`} onChange={handleActionChange} className="hidden" />
-                <label htmlFor="say" onClick={handleSayLabelClick}>
-                  <span className="cursor-pointer">(<button id="sayButton" type="button" tabIndex={0} onClick={handleSayClick} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{action === `say` ? `*` : ` `}</button>)</span>Say
-                </label>
-              </div>
-              <div className="bg-transparent ml-4 w-4/7">
-                <input id="think" type="radio" name="action" value="think" checked={action === `think`} onChange={handleActionChange} className="hidden" />
-                <label htmlFor="think" onClick={handleThinkLabelClick}>
-                  <span className="cursor-pointer">(<button id="thinkButton" type="button" tabIndex={0} onClick={handleThinkClick} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{action === `think` ? `*` : ` `}</button>)</span>Think
-                </label>
-              </div>
+              <Radio name="action" id="say" checked={action === `say`} onChange={setAction} className="pr-2 w-3/7">
+                Say
+              </Radio>
+              <Radio name="action" id="think" checked={action === `think`} onChange={setAction} className="pr-2 w-4/7">
+                Think
+              </Radio>
             </div>
           </fieldset>
         </div>
@@ -272,12 +224,9 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
             </legend>
             <div className="flex">
               <Spinbox value={wrapColumn} min={0} disabled={noWrap} onChange={setWrapColumn} className="pr-2 w-5/12" />
-              <div className="bg-transparent pl-2 ml-4 w-7/12">
-                <input id="no-wrap" type="checkbox" checked={noWrap} onChange={handleNoWrapChange} className="hidden" />
-                <label htmlFor="no-wrap" onClick={handleNoWrapLabelClick}>
-                  <span className="cursor-pointer">[<button id="noWrapButton" tabIndex={0} onClick={handleNoWrapClick} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{noWrap ? `x` : ` `}</button>]</span>No wrap
-                </label>
-              </div>
+              <Checkbox id="no-wrap" checked={noWrap} onChange={setNoWrap} className="pl-2 ml-4 w-7/12">
+                No wrap
+              </Checkbox>
             </div>
           </fieldset>
         </div>
@@ -292,6 +241,6 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <textarea id="message" value={message} autoCapitalize="none" spellCheck={false} autoFocus onChange={handleMessageChange} className="bg-black text-white focus:outline-none w-full min-h-10 md:min-h-full resize-y md:resize-none" />
         </fieldset>
       </div>
-    </div>
+    </form>
   );
 };
