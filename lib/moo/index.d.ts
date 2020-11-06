@@ -12,7 +12,7 @@ export interface Face {
 export interface CowOptions extends Partial<Face> {
   readonly cow?: string;
   readonly mode?: `u` | `b` | `d` | `g` | `p` | `s` | `t` | `w` | `y`;
-  readonly wrap?: number;
+  readonly wrap?: number | false;
 }
 
 /**
@@ -56,7 +56,7 @@ export const modes: Mode[];
  * @param message Cow message
  * @param options Cow options
  */
-export function moo(message: string, options: MooOptions): string;
+export function moo(message: string, options?: MooOptions): string;
 
 /**
 * Create thinkg cow
@@ -64,7 +64,7 @@ export function moo(message: string, options: MooOptions): string;
 * @param message Cow message
 * @param options Cow options
 */
-export function cowsay(message: string, options: CowOptions): string;
+export function cowsay(message: string, options?: CowOptions): string;
 
 /**
  * Create thinkig cow
@@ -72,7 +72,7 @@ export function cowsay(message: string, options: CowOptions): string;
  * @param message Cow message
  * @param options Cow options
  */
-export function cowthink(message: string, options: CowOptions): string;
+export function cowthink(message: string, options?: CowOptions): string;
 
 
 /**

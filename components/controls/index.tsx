@@ -1,6 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, ChangeEvent, WheelEvent } from "react";
+import { useRouter } from "next/router";
 
 import { cows, modes, getFace, getMode, MooOptions } from "../../lib/moo";
+import { parseOptions } from "../../utils/parse-options";
 
 
 /**
@@ -26,6 +28,7 @@ const clamp = (str: string, last = false) =>
  * @param props Controls component properties
  */
 export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.Element => {
+  const router = useRouter();
   const [ action, setAction ] = useState<MooOptions["action"]>(`say`);
   const [ cow, setCow ] = useState(`default`);
   const [ mode, setMode ] = useState(`u`);
@@ -167,13 +170,54 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
 
   // Initialize and focus message
   useEffect(() => {
-    setMessage(`moo!`);
+    // Parse query string options
+    const { message, options } = parseOptions(router.query);
+
+    // Set given values
+    setMessage(message === undefined ? `moo!` : message);
+
+    if (options.action === `think`) {
+      setAction(`think`);
+    }
+
+    if (cows.some(({ name }) => name === options.cow)) {
+      setCow(options.cow);
+    }
+
+    if (router.query.wrap !== undefined) {
+      if (options.wrap === false) {
+        setNoWrap(true);
+      }
+      else {
+        setWrapColumn(options.wrap < 0 ? 0 : options.wrap);
+      }
+    }
+
+    if ((options.eyes !== undefined) || (options.tongue !== undefined)) {
+      const eyes = options.eyes === undefined ? `oo` : options.eyes.slice(0, 2);
+      const tongue = options.tongue === undefined ? `` : options.tongue.slice(0, 2);
+      const mode = getMode(eyes, tongue);
+
+      setMode(mode);
+      setEyes(eyes);
+      setTongue(tongue);
+    }
+    else if (modes.some(({ id }) => id === options.mode)) {
+      const { eyes, tongue } = getFace(options.mode);
+
+      setMode(options.mode);
+      setEyes(eyes);
+      setTongue(tongue);
+    }
+
+
+    // Focus message
     document.getElementById(`message`).focus();
-  }, []);
+  }, [ router ]);
 
   // Update cow
   useEffect(() => {
-    onChange(message, { action, cow, eyes, tongue, wrap: noWrap ? undefined : wrapColumn });
+    onChange(message, { action, cow, eyes, tongue, wrap: noWrap ? false : wrapColumn });
   }, [ message, action, cow, eyes, tongue, wrapColumn, noWrap, onChange ]);
 
 
@@ -250,7 +294,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
               <label htmlFor="wrap-col">Wrap column</label>
             </legend>
             <div className="flex">
-              <input id="wrap-col" type="text" inputMode="numeric" value={wrapColumn} min={0} step={0} onChange={handleWrapColumnChange} onWheel={handleWrapColumnScroll} className="bg-transparent text-white focus:outline-none pr-2 w-5/12" />
+              <input id="wrap-col" type="text" inputMode="numeric" value={wrapColumn} min={0} step={0} disabled={noWrap} onChange={handleWrapColumnChange} onWheel={handleWrapColumnScroll} className="bg-transparent text-white focus:outline-none pr-2 w-5/12" />
               <div className="bg-transparent pl-2 ml-4 w-7/12">
                 <input id="no-wrap" type="checkbox" checked={noWrap} onChange={handleNoWrapChange} className="hidden" />
                 <label htmlFor="no-wrap" onClick={handleNoWrapLabelClick}>
