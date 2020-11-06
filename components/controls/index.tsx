@@ -232,7 +232,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
             <legend className="cursor-default px-1">
               <label htmlFor="cow">Cow</label>
             </legend>
-            <select id="cow" value={cow} onChange={handleCowChange} className="bg-transparent text-white align-middle focus:bg-white focus:text-black focus:outline-none appearance-none w-full">
+            <select id="cow" value={cow} onChange={handleCowChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none w-full">
               {cowsOptions}
             </select>
           </fieldset>
@@ -263,7 +263,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
             <legend className="cursor-default px-1">
               <label htmlFor="mode">Mode</label>
             </legend>
-            <select id="mode" value={mode} onChange={handleModeChange} className="bg-transparent text-white align-middle focus:bg-white focus:text-black focus:outline-none appearance-none w-full">
+            <select id="mode" value={mode} onChange={handleModeChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none w-full">
               {modesOptions}
             </select>
           </fieldset>
@@ -294,7 +294,10 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
               <label htmlFor="wrap-col">Wrap column</label>
             </legend>
             <div className="flex">
-              <input id="wrap-col" type="text" inputMode="numeric" value={wrapColumn} min={0} step={0} disabled={noWrap} onChange={handleWrapColumnChange} onWheel={handleWrapColumnScroll} className="bg-transparent text-white focus:outline-none pr-2 w-5/12" />
+              <div className="flex pr-2 w-5/12">
+                <input id="wrap-col" type="text" inputMode="numeric" value={wrapColumn} min={0} step={0} disabled={noWrap} onChange={handleWrapColumnChange} onWheel={handleWrapColumnScroll} className="bg-transparent text-white disabled:text-gray-light bg-right bg-no-repeat focus:outline-none -mr-3 w-full" />
+                <span className={`${noWrap ? `arrow-up-down-gray-light` : `arrow-up-down-white`} bg-no-repeat bg-center w-3`} />
+              </div>
               <div className="bg-transparent pl-2 ml-4 w-7/12">
                 <input id="no-wrap" type="checkbox" checked={noWrap} onChange={handleNoWrapChange} className="hidden" />
                 <label htmlFor="no-wrap" onClick={handleNoWrapLabelClick}>

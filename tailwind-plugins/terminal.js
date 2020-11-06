@@ -9,10 +9,23 @@ const config = {
     columns: {
       "1": 1,
       "2": 2
+    },
+    arrows: {
+      down: {
+        width: 9,
+        height: 6,
+        paths: [ `M0 0H9L5 5Z` ]
+      },
+      "up-down": {
+        width: 9,
+        height: 12,
+        paths: [ `M0 5H9L5 0Z`, `M0 7H9L5 12Z` ]
+      }
     }
   },
   variants: {
-    columns: [ `responsive` ]
+    columns: [ `responsive` ],
+    arrows: [ `focus` ]
   }
 };
 
@@ -28,9 +41,14 @@ const config = {
  * @param {function} helper.theme Looking up values in the user's variants configuration
  */
 const terminal = ({ addUtilities, addBase, e, theme, variants }) => {
-  // Known colors
+  // Process colors
   const black = theme(`colors.black`, `#000000`);
   const white = theme(`colors.white`, `#ffffff`);
+  const colors = Object.entries(theme(`colors`, [])).map(([ color, value ]) =>
+    typeof value === `string` ? { color, value } : Object.entries(value).map(([ modifier, value ]) =>
+      modifier === `default` ? { color, value } : { color: `${color}-${modifier}`, value }
+    )
+  ).reduce((colors, color) => colors.concat(color), []);
 
 
   // HTML base style
@@ -54,34 +72,17 @@ const terminal = ({ addUtilities, addBase, e, theme, variants }) => {
 
 
   // Selection
-  Object.entries(theme(`colors`)).forEach(([ color, value ]) => {
+  colors.forEach(({ color, value }) => {
     // Transparent
     if (value === `transparent`) {
       addBase({ [`.bg-${e(color)}::selection`]: { color: black } });
       addBase({ [`.text-${e(color)}::selection`]: { backgroundColor: black } });
     }
 
-    // Simple colors
-    else if (typeof value === `string`) {
+    // Other colors
+    else {
       addBase({ [`.bg-${e(color)}::selection`]: { color: value } });
       addBase({ [`.text-${e(color)}::selection`]: { backgroundColor: value } });
-    }
-
-    // Nested colors
-    else {
-      Object.entries(value).forEach(([ modifier, value ]) => {
-        // Default color
-        if (modifier === `default`) {
-          addBase({ [`.bg-${e(color)}::selection`]: { color: value } });
-          addBase({ [`.text-${e(color)}::selection`]: { backgroundColor: value } });
-        }
-
-        // Other
-        else {
-          addBase({ [`.bg-${e(`${color}-${modifier}`)}::selection`]: { color: value } });
-          addBase({ [`.text-${e(`${color}-${modifier}`)}::selection`]: { backgroundColor: value } });
-        }
-      });
     }
   });
 
@@ -104,6 +105,17 @@ const terminal = ({ addUtilities, addBase, e, theme, variants }) => {
   const columnsVariants = variants(`columns`);
   Object.entries(theme(`columns`)).forEach(([ key, value ]) => {
     addUtilities({ [`.${e(`columns-${key}`)}`]: { columnCount: value } }, columnsVariants);
+  });
+
+
+  // Select arrows
+  const arrowsVariants = variants(`arrows`);
+  Object.entries(theme(`arrows`)).forEach(([ key, { width, height, paths } ]) => {
+    colors.forEach(({ color, value }) => {
+      const path = paths.map(path => `<path fill="${value}" d="${path}" />`);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${path}</svg>`;
+      addUtilities({ [`.${e(`arrow-${key}-${color}`)}`]: { backgroundImage: `url("data:image/svg+xml;base64,${Buffer.from(svg).toString(`base64`)}")`} }, arrowsVariants);
+    });
   });
 };
 
