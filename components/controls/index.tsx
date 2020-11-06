@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/router";
 
-import { Radio as Radio } from "./radio";
+import { Radio } from "./radio";
 import { Spinbox } from "./spinbox";
+import { Checkbox } from "./checkbox";
 
 import { cows, modes, getFace, getMode, MooOptions } from "../../lib/moo";
 import { parseOptions } from "../../utils/parse-options";
-import { Checkbox } from "./checkbox";
 
 
 /**
