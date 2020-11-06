@@ -11,6 +11,11 @@ const config = {
       "2": 2
     },
     arrows: {
+      up: {
+        width: 9,
+        height: 6,
+        paths: [ `M0 6H9L5 1Z` ]
+      },
       down: {
         width: 9,
         height: 6,
@@ -25,7 +30,7 @@ const config = {
   },
   variants: {
     columns: [ `responsive` ],
-    arrows: [ `focus` ]
+    arrows: [ `focus`, `disabled` ]
   }
 };
 

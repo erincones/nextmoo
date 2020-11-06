@@ -1,5 +1,7 @@
-import { useState, useMemo, useCallback, useEffect, ChangeEvent, WheelEvent } from "react";
+import { useState, useMemo, useCallback, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/router";
+
+import { Spinbox } from "./spinbox";
 
 import { cows, modes, getFace, getMode, MooOptions } from "../../lib/moo";
 import { parseOptions } from "../../utils/parse-options";
@@ -121,31 +123,6 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
   }, [ eyes ]);
 
 
-  // Wrap column change handler
-  const handleWrapColumnChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    if (/^\d*$|^0x[\dA-Fa-f]+$/.test(e.currentTarget.value)) {
-      const value = parseInt(e.currentTarget.value);
-
-      if (value >= 0) {
-        setWrapColumn(value);
-      }
-      else if (e.currentTarget.value.length === 0) {
-        setWrapColumn(0);
-      }
-    }
-  }, []);
-
-  // Wrap column scroll handler
-  const handleWrapColumnScroll = useCallback((e: WheelEvent<HTMLInputElement>) => {
-    if (e.deltaY > 0) {
-      setWrapColumn(wrapColumn => wrapColumn > 0 ? wrapColumn - 1 : wrapColumn);
-    }
-    else {
-      setWrapColumn(wrapColumn => wrapColumn + 1);
-    }
-  }, []);
-
-
   // No wrap change handler
   const handleNoWrapChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setNoWrap(e.currentTarget.checked);
@@ -232,7 +209,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
             <legend className="cursor-default px-1">
               <label htmlFor="cow">Cow</label>
             </legend>
-            <select id="cow" value={cow} onChange={handleCowChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none w-full">
+            <select id="cow" value={cow} title={cow} onChange={handleCowChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none pr-3 w-full">
               {cowsOptions}
             </select>
           </fieldset>
@@ -263,7 +240,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
             <legend className="cursor-default px-1">
               <label htmlFor="mode">Mode</label>
             </legend>
-            <select id="mode" value={mode} onChange={handleModeChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none w-full">
+            <select id="mode" value={mode} title={mode} onChange={handleModeChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none pr-3 w-full">
               {modesOptions}
             </select>
           </fieldset>
@@ -294,10 +271,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
               <label htmlFor="wrap-col">Wrap column</label>
             </legend>
             <div className="flex">
-              <div className="flex pr-2 w-5/12">
-                <input id="wrap-col" type="text" inputMode="numeric" value={wrapColumn} min={0} step={0} disabled={noWrap} onChange={handleWrapColumnChange} onWheel={handleWrapColumnScroll} className="bg-transparent text-white disabled:text-gray-light bg-right bg-no-repeat focus:outline-none -mr-3 w-full" />
-                <span className={`${noWrap ? `arrow-up-down-gray-light` : `arrow-up-down-white`} bg-no-repeat bg-center w-3`} />
-              </div>
+              <Spinbox value={wrapColumn} min={0} disabled={noWrap} onChange={setWrapColumn} className="pr-2 w-5/12" />
               <div className="bg-transparent pl-2 ml-4 w-7/12">
                 <input id="no-wrap" type="checkbox" checked={noWrap} onChange={handleNoWrapChange} className="hidden" />
                 <label htmlFor="no-wrap" onClick={handleNoWrapLabelClick}>

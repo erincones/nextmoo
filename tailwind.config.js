@@ -65,6 +65,7 @@ module.exports = {
         "6/7": `85.7143%`
       },
       width: {
+        "full-3": `calc(100% - 0.75rem)`,
         "max-content": `max-content`
       },
       minHeight: {
@@ -73,7 +74,8 @@ module.exports = {
     }
   },
   variants: {
-    textColor: [ `responsive`, `hover`, `focus`, `disabled` ]
+    textColor: [ `responsive`, `hover`, `focus`, `disabled` ],
+    cursor: [ `disabled` ]
   },
   plugins: [
     terminal
