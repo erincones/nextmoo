@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/erincones/nextmoo/issues"
   },
-  "homepage": "https://github.com/erincones/nextmoo#readme",
+  "homepage": "https://nextmoo.vercel.app",
   "dependencies": {
     "next": "10.0.0",
     "postcss-flexbugs-fixes": "^5.0.0",
