@@ -15,7 +15,7 @@ export interface Options {
  *
  * @param opts Options
  */
-export const parseOptions = (opts: {[key: string]: unknown}): Options => {
+export const parseOptions = (opts: { [key: string]: unknown }): Options => {
   const wrap = opts.wrap === undefined ? 40 : typeof opts.wrap === `number` ? opts.wrap : typeof opts.wrap === `string` ? parseInt(opts.wrap) : NaN;
 
   return {

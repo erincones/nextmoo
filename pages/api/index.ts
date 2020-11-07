@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { moo } from "../../lib/moo";
+import { parseBody } from "../../utils/parse-body";
 import { parseOptions, Options } from "../../utils/parse-options";
 
 
@@ -10,9 +11,10 @@ import { parseOptions, Options } from "../../utils/parse-options";
  * @param req Request
  * @param res Response
  */
-export default (req: NextApiRequest, res: NextApiResponse): void => {
+export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   // Default headers
-  res.setHeader(`Access-Control-Allow-Methods`, `HEAD,OPTIONS,GET,POST`);
+  res.setHeader(`Access-Control-Allow-Headers`, `X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version`);
+  res.setHeader(`Access-Control-Allow-Methods`, `GET, POST, HEAD, OPTIONS`);
   res.setHeader(`Access-Control-Allow-Origin`, `*`);
 
 
@@ -27,7 +29,7 @@ export default (req: NextApiRequest, res: NextApiResponse): void => {
 
     // Allowed methods
     case `GET`: options = parseOptions(req.query); break;
-    case `POST`: options = parseOptions(req.body); break;
+    case `POST`: options = parseOptions(await parseBody(req)); break;
 
     // Unknown methods
     default: res.status(405).send(moo(`405: Method not allowed`)); return;
@@ -36,4 +38,14 @@ export default (req: NextApiRequest, res: NextApiResponse): void => {
   // Send cow
   res.setHeader(`Content-Type`, `text/plain`);
   res.send(moo(options.message, options.options));
+};
+
+
+/**
+ * API configuration
+ */
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 };
