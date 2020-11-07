@@ -1,6 +1,9 @@
 import { useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
 
 import { Prompt } from "./prompt";
+import { Help } from "./help";
+
+import { line } from "./utils";
 
 
 /**
@@ -23,6 +26,29 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
   const [ output, setOutput ] = useState<JSX.Element[]>([]);
 
 
+  // Execute command
+  const execCommand = useCallback((input: string, key: number) => {
+    // Empty command
+    if (input.length === 0) {
+      return undefined;
+    }
+
+
+    // Get command and arguments
+    const space = input.search(/\s/);
+    const command = space > 0 ? input.slice(0, space) : input;
+    const args = space > 0 ? input.slice(space + 1).trim() : ``;
+
+    // Execute commands
+    switch (command) {
+      case `clear`: return null;
+      case `help`: return <Help key={key} />;
+      case `echo`: return <pre key={key}>{args}</pre>;
+      default: return <pre key={key} className={line}>moo!: {command}: command not found</pre>;
+    }
+  }, []);
+
+
   // ChangeHandler
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     // Update command
@@ -33,18 +59,25 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
 
     // Process command
     else {
-      const command = e.currentTarget.value.slice(padding.length);
+      e.currentTarget.value
+        .slice(padding.length, e.currentTarget.value.length - 1)
+        .split(/\r\n|[\n\r\f\v\u2028\u2029\u0085]/g)
+        .forEach(command => {
+          setOutput(output => {
+            // Execute command
+            const key = output.length;
+            const prompt = <Prompt key={key} path="moo" className={line}>{command}</Prompt>;
+            const out = execCommand(command.trim(), key + 1);
 
-      setOutput(output => output.concat(
-        <Prompt key={output.length} path="moo" className="break-all whitespace-pre-wrap">
-          {command}
-        </Prompt>
-      ));
+            // Store output
+            return out === null ? [] : output.concat([ prompt, out ]);
+          });
+        });
 
       setCommand(``);
       setHeight(undefined);
     }
-  }, [ padding ]);
+  }, [ padding, execCommand ]);
 
   // Select handler
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
@@ -60,7 +93,6 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
 
     setPadding(padding);
     setCommand(padding);
-    document.getElementById(`command`).scrollIntoView(true);
   }, [ output ]);
 
   // Adjust the command height
@@ -68,6 +100,14 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
     const { clientHeight, scrollHeight } = document.getElementById(`command`);
     setHeight(height => (height !== undefined) || (clientHeight < scrollHeight) ? scrollHeight : height);
   }, [ command ]);
+
+  // Execute help by default
+  useEffect(() => {
+    setOutput([
+      <Prompt key={0} path="moo" className={line}>help</Prompt>,
+      <Help key={1} />
+    ]);
+  }, []);
 
 
   // Return terminal component
@@ -79,11 +119,7 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
       </pre>
 
       {/* Output and input */}
-      <div className="flex flex-col flex-grow overflow-y-auto">
-        <Prompt path="moo" className="break-all whitespace-pre-wrap">help</Prompt>
-        <pre className="break-all whitespace-pre-wrap">Moo! Developed by Erick Rincones.</pre>
-        <pre className="break-all whitespace-pre-wrap">Special thanks to Aury Rincones.</pre>
-        <pre className="break-all whitespace-pre-wrap">Licensed under the <a href="#" className="underline focus:outline-none">MIT license</a>.</pre>
+      <div id="terminal" className="flex flex-col flex-grow overflow-y-auto">
         {output}
 
         <div className="relative flex flex-grow">

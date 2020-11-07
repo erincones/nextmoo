@@ -103,7 +103,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
   }, []);
 
 
-  // Initialize and focus message
+  // Initialize values from query string
   useEffect(() => {
     // Parse query string options
     const { message, options } = parseOptions(router.query);
@@ -176,10 +176,10 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
             <legend className="cursor-default px-1">Action</legend>
             <div className="flex">
-              <Radio name="action" id="say" checked={action === `say`} onChange={setAction} className="pr-2 w-3/7">
+              <Radio name="action" id="say" checked={action === `say`} onChange={setAction} className="w-3/7">
                 Say
               </Radio>
-              <Radio name="action" id="think" checked={action === `think`} onChange={setAction} className="pr-2 w-4/7">
+              <Radio name="action" id="think" checked={action === `think`} onChange={setAction} className="pl-2 w-4/7">
                 Think
               </Radio>
             </div>
