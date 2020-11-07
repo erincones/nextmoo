@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { moo } from "../../lib/moo";
-import { parseOptions } from "../../utils/parse-options";
+import { parseOptions, Options } from "../../utils/parse-options";
 
 
 /**
@@ -11,16 +11,29 @@ import { parseOptions } from "../../utils/parse-options";
  * @param res Response
  */
 export default (req: NextApiRequest, res: NextApiResponse): void => {
-  // Default content type
-  res.setHeader(`Content-Type`, `text/plain`);
+  // Default headers
+  res.setHeader(`Access-Control-Allow-Methods`, `HEAD,OPTIONS,GET,POST`);
+  res.setHeader(`Access-Control-Allow-Origin`, `*`);
+
+
+  // Moo options
+  let options: Options;
 
   // Check method
-  if ((req.method !== `GET`) && (req.method !== `POST`) && (req.method !== `HEAD`)) {
-    res.statusCode = 405;
-    res.send(moo(`405: Method Not Allowed`));
+  switch (req.method) {
+    // Default methods
+    case `HEAD`:
+    case `OPTIONS`: res.end(); return;
+
+    // Allowed methods
+    case `GET`: options = parseOptions(req.query); break;
+    case `POST`: options = parseOptions(req.body); break;
+
+    // Unknown methods
+    default: res.status(405).send(moo(`405: Method not allowed`)); return;
   }
 
   // Send cow
-  const { message, options} = parseOptions(req.method === `GET` ? req.query : req.body);
-  res.send(moo(message, options));
+  res.setHeader(`Content-Type`, `text/plain`);
+  res.send(moo(options.message, options.options));
 };

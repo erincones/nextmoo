@@ -1,4 +1,4 @@
-import { useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
+import { useMemo, useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
@@ -10,7 +10,7 @@ import { line } from "./utils";
  * Terminal component properties
  */
 interface TerminalProps {
-  readonly cow?: string;
+  readonly header?: string;
 }
 
 
@@ -19,11 +19,21 @@ interface TerminalProps {
  *
  * @param props Terminal component properties
  */
-export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
+export const Terminal = ({ header }: TerminalProps): JSX.Element => {
   const [ height, setHeight ] = useState<number>();
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
   const [ output, setOutput ] = useState<JSX.Element[]>([]);
+
+
+  // Header
+  const head = useMemo(() =>
+    header === undefined ? null : (
+      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
+        {header}
+      </pre>
+    )
+  , [ header ]);
 
 
   // Execute command
@@ -113,15 +123,15 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
   // Return terminal component
   return (
     <div className="flex flex-col flex-grow cursor-text px-px w-full md:w-7/12">
-      {/* Cow */}
-      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
-        {cow}
-      </pre>
+      {/* Header */}
+      {head}
 
-      {/* Output and input */}
+      {/* Terminal */}
       <div id="terminal" className="flex flex-col flex-grow overflow-y-auto">
+        {/* Output */}
         {output}
 
+        {/* Input */}
         <div className="relative flex flex-grow">
           <Prompt id="prompt" path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
           <textarea id="command" value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" style={{ height }} />

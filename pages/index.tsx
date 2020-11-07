@@ -33,7 +33,7 @@ const Home = (): JSX.Element => {
 
       <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
         <Controls onChange={handleOptionsHandler} />
-        <Terminal cow={cow} />
+        <Terminal header={cow} />
       </div>
     </>
   );

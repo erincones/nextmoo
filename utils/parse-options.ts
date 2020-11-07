@@ -4,7 +4,7 @@ import { MooOptions } from "../lib/moo";
 /**
  * Moo options
  */
-interface Options {
+export interface Options {
   readonly message: string;
   readonly options: MooOptions;
 }
