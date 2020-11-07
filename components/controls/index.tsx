@@ -238,7 +238,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <legend className="cursor-default px-1">
             <label htmlFor="message">Message</label>
           </legend>
-          <textarea id="message" value={message} autoCapitalize="none" spellCheck={false} autoFocus onChange={handleMessageChange} className="bg-black text-white focus:outline-none w-full min-h-10 md:min-h-full resize-y md:resize-none" />
+          <textarea id="message" value={message} rows={1} autoCapitalize="none" spellCheck={false} autoFocus onChange={handleMessageChange} className="bg-black text-white focus:outline-none w-full min-h-10 md:min-h-full resize-y md:resize-none" />
         </fieldset>
       </div>
     </form>

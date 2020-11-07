@@ -1,4 +1,4 @@
-import { useState, useCallback, KeyboardEvent, ClipboardEvent, MouseEvent } from "react";
+import { useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
 
 import { Prompt } from "./prompt";
 
@@ -17,41 +17,57 @@ interface TerminalProps {
  * @param props Terminal component properties
  */
 export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
+  const [ height, setHeight ] = useState<number>();
+  const [ padding, setPadding ] = useState(``);
+  const [ command, setCommand ] = useState(``);
   const [ output, setOutput ] = useState<JSX.Element[]>([]);
 
 
-  // Terminal click handler
-  const handleTerminalClick = useCallback((e: MouseEvent<HTMLElement>) => {
-    if (e.target === e.currentTarget) {
-      document.getElementById(`command`).focus();
+  // ChangeHandler
+  const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    // Update command
+    if (!/\r\n|[\n\r\f\v\u2028\u2029\u0085]/.test(e.currentTarget.value)) {
+      const value = e.currentTarget.value;
+      setCommand(command => value.startsWith(padding) ? value : command);
     }
-  }, []);
 
-
-  // Command key down handler
-  const handleCommandKeyDown = useCallback((e: KeyboardEvent<HTMLPreElement>) => {
-    if (e.key === `Enter`) {
-      e.preventDefault();
-
-      // Get command and update output
-      const command = e.currentTarget.textContent;
+    // Process command
+    else {
+      const command = e.currentTarget.value.slice(padding.length);
 
       setOutput(output => output.concat(
-        <Prompt key={output.length} className="break-all whitespace-pre-wrap">
+        <Prompt key={output.length} path="moo" className="break-all whitespace-pre-wrap">
           {command}
         </Prompt>
       ));
 
-      // Clean command
-      e.currentTarget.textContent = ``;
-      e.currentTarget.scrollIntoView(true);
+      setCommand(``);
+      setHeight(undefined);
     }
-  }, []);
+  }, [ padding ]);
 
-  // Command paste handler
-  const handleCommandPaste = useCallback((e: ClipboardEvent<HTMLPreElement>) => {
-    console.log(e.clipboardData.getData(`text/plain`));
-  }, []);
+  // Select handler
+  const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
+    if (e.currentTarget.selectionStart < padding.length) {
+      e.currentTarget.selectionStart = padding.length;
+    }
+  }, [ padding ]);
+
+
+  // Update command padding
+  useEffect(() => {
+    const padding = ` `.repeat(document.getElementById(`prompt`).innerText.length);
+
+    setPadding(padding);
+    setCommand(padding);
+    document.getElementById(`command`).scrollIntoView(true);
+  }, [ output ]);
+
+  // Adjust the command height
+  useEffect(() => {
+    const { clientHeight, scrollHeight } = document.getElementById(`command`);
+    setHeight(height => (height !== undefined) || (clientHeight < scrollHeight) ? scrollHeight : height);
+  }, [ command ]);
 
 
   // Return terminal component
@@ -64,15 +80,15 @@ export const Terminal = ({ cow }: TerminalProps): JSX.Element => {
 
       {/* Output and input */}
       <div className="flex flex-col flex-grow overflow-y-auto">
-        <Prompt className="inline break-all whitespace-pre-wrap">help</Prompt>
+        <Prompt path="moo" className="break-all whitespace-pre-wrap">help</Prompt>
         <pre className="break-all whitespace-pre-wrap">Moo! Developed by Erick Rincones.</pre>
         <pre className="break-all whitespace-pre-wrap">Special thanks to Aury Rincones.</pre>
         <pre className="break-all whitespace-pre-wrap">Licensed under the <a href="#" className="underline focus:outline-none">MIT license</a>.</pre>
         {output}
 
-        <div onClick={handleTerminalClick} className="flex-grow">
-          <Prompt className="inline break-all whitespace-pre-wrap" />
-          <pre id="command" autoCapitalize="none" spellCheck={false} contentEditable tabIndex={0} onKeyDown={handleCommandKeyDown} onPaste={handleCommandPaste} className="inline bg-black text-white break-all whitespace-pre-wrap focus:outline-none w-full" />
+        <div className="relative flex flex-grow">
+          <Prompt id="prompt" path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
+          <textarea id="command" value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" style={{ height }} />
         </div>
       </div>
     </div>

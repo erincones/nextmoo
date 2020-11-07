@@ -69,7 +69,8 @@ module.exports = {
         "max-content": `max-content`
       },
       minHeight: {
-        "10": `2.5rem`
+        "10": `2.5rem`,
+        terminal: `1.1875rem`
       }
     }
   },

@@ -20,11 +20,6 @@ const config = {
         width: 9,
         height: 6,
         paths: [ `M0 0H9L5 5Z` ]
-      },
-      "up-down": {
-        width: 9,
-        height: 12,
-        paths: [ `M0 5H9L5 0Z`, `M0 7H9L5 12Z` ]
       }
     }
   },
