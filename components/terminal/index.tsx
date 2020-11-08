@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, ChangeEvent, useEffect, SyntheticEvent 
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
+import { Ls } from "./ls";
 
 import { line } from "./utils";
 
@@ -53,6 +54,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
     switch (command) {
       case `clear`: return null;
       case `help`: return <Help key={key} />;
+      case `ls`  : return <Ls key={key} />;
       case `echo`: return <pre key={key}>{args}</pre>;
       default: return <pre key={key} className={line}>moo!: {command}: command not found</pre>;
     }

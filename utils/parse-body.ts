@@ -20,7 +20,7 @@ export const parseBody = (req: NextApiRequest): Promise<{ [key: string]: unknown
 
       // Try to parse data to JSON and resolve
       try { req.body = JSON.parse(body); }
-      catch { req.body = { message: `Error: not valid data\n\n${body}`}; }
+      catch { req.body = { message: body }; }
       finally { resolve(req.body); }
     });
   })
