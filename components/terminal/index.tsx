@@ -1,11 +1,14 @@
-import { useMemo, useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
+import { useRef, useMemo, useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
 import { Ls } from "./ls";
+import { History } from "./history";
 import { Bad } from "./bad";
 
 import { line } from "./utils";
+
+import { useHistory } from "../../hooks/history";
 
 
 /**
@@ -22,11 +25,12 @@ interface TerminalProps {
  * @param props Terminal component properties
  */
 export const Terminal = ({ header }: TerminalProps): JSX.Element => {
-  const [ user, setUser ] = useState<string>();
+  const user = useRef(`user`);
   const [ height, setHeight ] = useState<number>();
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
   const [ output, setOutput ] = useState<JSX.Element[]>([]);
+  const history = useHistory();
 
 
   // Header
@@ -62,7 +66,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       space += input.length - shift;
 
       sudo = true;
-      setUser(command === `su` ? `root` : undefined);
+      user.current = command === `su` ? `root` : `user`;
     }
 
     // Get arguments
@@ -71,17 +75,41 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
 
     // Execute commands
     switch (command) {
-      case `clear`  : return null;
-      case `help`   : return <Help key={key} />;
-      case `ls`     : return <Ls key={key} />;
-      case `echo`   : return <pre key={key}>{args}</pre>;
-      case `history`: return /^-c$|^-c\s/.test(args) ? undefined : undefined;
-      case `exit`   : setUser(undefined); // fallthrough
-      case `sudo`   : return undefined;
-      case `su`     : return sudo ? undefined : <Bad key={key} shell="moo!" command={command} locked />;
+      // Clear terminal
+      case `clear`: return null;
+
+      // Help
+      case `help`: return <Help key={key} />;
+
+      // List current folder files
+      case `ls`: return <Ls key={key} />;
+
+      // Echo
+      case `echo`: return <pre key={key}>{args}</pre>;
+
+      // Show or clear history
+      case `history`:
+        if (/^-c$|^-c\s/.test(args)) {
+          history.clear(user.current);
+          return undefined;
+        }
+        else {
+          return <History key={key} stack={history.stack(user.current)} />;
+        }
+
+      // Exit from super user
+      case `exit`: user.current = `user`;
+
+      // Fallthrough to sudo without command
+      case `sudo`: return undefined;
+
+      // Enable super user
+      case `su`: return sudo ? undefined : <Bad key={key} shell="moo!" command={command} locked />;
+
+      // Unknown command
       default: return <Bad key={key} shell="moo!" command={command} />;
     }
-  }, [ setUser ]);
+  }, [ history ]);
 
 
   // ChangeHandler
@@ -99,9 +127,11 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
         .split(/\r\n|[\n\r\f\v\u2028\u2029\u0085]/g)
         .forEach(command => {
           setOutput(output => {
-            // Execute command
+            // Store and execute command
+            history.push(user.current, command);
+
             const key = output.length;
-            const prompt = <Prompt key={key} user={user} path="moo" className={line}>{command}</Prompt>;
+            const prompt = <Prompt key={key} user={user.current} path="moo" className={line}>{command}</Prompt>;
             const out = execCommand(command.trim(), key + 1);
 
             // Store output
@@ -112,7 +142,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       setCommand(``);
       setHeight(undefined);
     }
-  }, [ user, padding, execCommand ]);
+  }, [ user, padding, history, execCommand ]);
 
   // Select handler
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
@@ -158,7 +188,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
 
         {/* Input */}
         <div className="relative flex flex-grow">
-          <Prompt id="prompt" user={user} path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
+          <Prompt id="prompt" user={user.current} path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
           <textarea id="command" value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" style={{ height }} />
         </div>
       </div>
