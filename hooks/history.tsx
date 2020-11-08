@@ -37,8 +37,8 @@ export type Stack = Readonly<Entry>;
 /**
  * History hook
  */
-export const useHistory = (): HistoryHook => {
-  const history = useRef<History>({});
+export const useHistory = (initial: History = {}): HistoryHook => {
+  const history = useRef<History>(initial);
 
   // Get command at index
   const stack = useCallback((user: string) =>
@@ -55,11 +55,14 @@ export const useHistory = (): HistoryHook => {
   const prev = useCallback((user: string) => {
     const entry = history.current[user];
 
-    if ((entry === undefined) || (entry.current < 0)) {
+    if (entry === undefined) {
       return ``;
     }
 
-    entry.current--;
+    if (entry.current > 0) {
+      entry.current--;
+    }
+
     return entry.stack[entry.current];
   }, []);
 

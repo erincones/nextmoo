@@ -1,4 +1,4 @@
-import { useRef, useMemo, useState, useCallback, ChangeEvent, useEffect, SyntheticEvent } from "react";
+import { useRef, useMemo, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent } from "react";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
@@ -30,7 +30,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
   const [ output, setOutput ] = useState<JSX.Element[]>([]);
-  const history = useHistory();
+  const history = useHistory({ [user.current]: { stack: [ `help`], current: 1 } });
 
 
   // Header
@@ -112,7 +112,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
   }, [ history ]);
 
 
-  // ChangeHandler
+  // Chang eHandler
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     // Update command
     if (!/\r\n|[\n\r\f\v\u2028\u2029\u0085]/.test(e.currentTarget.value)) {
@@ -143,6 +143,19 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       setHeight(undefined);
     }
   }, [ user, padding, history, execCommand ]);
+
+  // Key down handler
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
+    switch (e.key) {
+      case `ArrowUp`:
+        setCommand(`${padding}${history.prev(user.current)}`);
+        return;
+
+      case `ArrowDown`:
+        setCommand(`${padding}${history.next(user.current)}`);
+        return;
+    }
+  }, [ padding, history ]);
 
   // Select handler
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
@@ -188,8 +201,8 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
 
         {/* Input */}
         <div className="relative flex flex-grow">
-          <Prompt id="prompt" user={user.current} path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
-          <textarea id="command" value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" style={{ height }} />
+          <Prompt id="prompt" user={user.current} path="moo" className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
+          <textarea id="command" value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" style={{ height }} />
         </div>
       </div>
     </div>
