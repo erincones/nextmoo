@@ -21,6 +21,7 @@ interface TerminalProps {
  * @param props Terminal component properties
  */
 export const Terminal = ({ header }: TerminalProps): JSX.Element => {
+  const [ user, setUser ] = useState<string>();
   const [ height, setHeight ] = useState<number>();
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
@@ -45,20 +46,41 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
     }
 
 
-    // Get command and arguments
-    const space = input.search(/\s/);
-    const command = space > 0 ? input.slice(0, space) : input;
+    // Parse command
+    let sudo = false;
+    let space = input.search(/\s/);
+    let command = space > 0 ? input.slice(0, space) : input;
+
+    // Parse sudo
+    if (command === `sudo`) {
+      command = input.slice(space + 1).trimLeft();
+      space = command.search(/\s/);
+      const shift = command.length;
+
+      command = space > 0 ? command.slice(0, space) : command;
+      space += input.length - shift;
+
+      sudo = true;
+      setUser(command === `su` ? `root` : undefined);
+    }
+
+    // Get arguments
     const args = space > 0 ? input.slice(space + 1).trim() : ``;
+
 
     // Execute commands
     switch (command) {
-      case `clear`: return null;
-      case `help`: return <Help key={key} />;
-      case `ls`  : return <Ls key={key} />;
-      case `echo`: return <pre key={key}>{args}</pre>;
+      case `clear`  : return null;
+      case `help`   : return <Help key={key} />;
+      case `ls`     : return <Ls key={key} />;
+      case `echo`   : return <pre key={key}>{args}</pre>;
+      case `history`: return /^-c$|^-c\s/.test(args) ? undefined : undefined;
+      case `exit`   : setUser(undefined); // fallthrough
+      case `sudo`   : return undefined;
+      case `su`     : return sudo ? undefined : <pre key={key} className={line}>moo!: {command}: Operation not permitted</pre>;
       default: return <pre key={key} className={line}>moo!: {command}: command not found</pre>;
     }
-  }, []);
+  }, [ setUser ]);
 
 
   // ChangeHandler
@@ -78,7 +100,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
           setOutput(output => {
             // Execute command
             const key = output.length;
-            const prompt = <Prompt key={key} path="moo" className={line}>{command}</Prompt>;
+            const prompt = <Prompt key={key} user={user} path="moo" className={line}>{command}</Prompt>;
             const out = execCommand(command.trim(), key + 1);
 
             // Store output
@@ -89,7 +111,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       setCommand(``);
       setHeight(undefined);
     }
-  }, [ padding, execCommand ]);
+  }, [ user, padding, execCommand ]);
 
   // Select handler
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
@@ -135,7 +157,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
 
         {/* Input */}
         <div className="relative flex flex-grow">
-          <Prompt id="prompt" path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
+          <Prompt id="prompt" user={user} path="moo" className="absolute top-0 left-0 break-all whitespace-pre-wrap" />
           <textarea id="command" value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" style={{ height }} />
         </div>
       </div>
