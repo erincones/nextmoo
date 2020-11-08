@@ -182,7 +182,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       {head}
 
       {/* Terminal */}
-      <div id="terminal" className="flex flex-col flex-grow overflow-y-auto">
+      <div id="terminal" className="flex flex-col flex-grow overflow-y-auto md:min-h-55">
         {/* Output */}
         {output}
 

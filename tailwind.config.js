@@ -70,7 +70,8 @@ module.exports = {
       },
       minHeight: {
         "10": `2.5rem`,
-        terminal: `1.1875rem`
+        "20": `5rem`,
+        "55": `13.75rem`
       }
     }
   },
