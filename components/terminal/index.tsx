@@ -3,6 +3,7 @@ import { useMemo, useState, useCallback, ChangeEvent, useEffect, SyntheticEvent 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
 import { Ls } from "./ls";
+import { Bad } from "./bad";
 
 import { line } from "./utils";
 
@@ -77,8 +78,8 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       case `history`: return /^-c$|^-c\s/.test(args) ? undefined : undefined;
       case `exit`   : setUser(undefined); // fallthrough
       case `sudo`   : return undefined;
-      case `su`     : return sudo ? undefined : <pre key={key} className={line}>moo!: {command}: Operation not permitted</pre>;
-      default: return <pre key={key} className={line}>moo!: {command}: command not found</pre>;
+      case `su`     : return sudo ? undefined : <Bad key={key} shell="moo!" command={command} locked />;
+      default: return <Bad key={key} shell="moo!" command={command} />;
     }
   }, [ setUser ]);
 
