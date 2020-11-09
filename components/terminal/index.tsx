@@ -85,7 +85,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       case `ls`: return <Ls key={key} />;
 
       // Echo
-      case `echo`: return <pre key={key}>{args}</pre>;
+      case `echo`: return <pre key={key}>{args.length === 0 ? `\n` : args}</pre>;
 
       // Show or clear history
       case `history`:
@@ -153,6 +153,11 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
 
       case `ArrowDown`:
         setCommand(`${padding}${history.next(user.current)}`);
+        return;
+
+      case `Enter`:
+        e.currentTarget.selectionStart = e.currentTarget.value.length;
+        e.currentTarget.selectionEnd = e.currentTarget.selectionStart;
         return;
     }
   }, [ padding, history ]);
