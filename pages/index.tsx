@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 
 import { SEO } from "../components/seo";
 import { Controls } from "../components/controls";
@@ -17,12 +17,6 @@ const Home = (): JSX.Element => {
   // Options change handler
   const handleOptionsHandler = useCallback((message: string, options: MooOptions) => {
     setCow(moo(message, options));
-  }, []);
-
-
-  // Scroll to top
-  useEffect(() => {
-    document.scrollingElement.scrollTop = 0;
   }, []);
 
 

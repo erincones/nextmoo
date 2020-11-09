@@ -148,10 +148,12 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
     switch (e.key) {
       case `ArrowUp`:
+        e.preventDefault();
         setCommand(`${padding}${history.prev(user.current)}`);
         return;
 
       case `ArrowDown`:
+        e.preventDefault();
         setCommand(`${padding}${history.next(user.current)}`);
         return;
 
