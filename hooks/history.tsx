@@ -70,13 +70,13 @@ export const useHistory = (initial: History = {}): HistoryHook => {
   const next = useCallback((user: string) => {
     const entry = history.current[user];
 
-    if ((entry !== undefined) || (entry.current >= entry.stack.length)) {
+    if ((entry === undefined) || (entry.current === (entry.stack.length - 1))) {
       return ``;
     }
 
     entry.current++;
     return entry.stack[entry.current];
-  }, [ history ]);
+  }, []);
 
   // Push command
   const push = useCallback((user: string, command: string) => {
@@ -89,7 +89,7 @@ export const useHistory = (initial: History = {}): HistoryHook => {
     else{
       history.current[user] = { stack: [ command ], current: 1 };
     }
-  }, [ history ]);
+  }, []);
 
   // Clear history
   const clear = useCallback((user: string) => {
