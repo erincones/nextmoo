@@ -27,13 +27,15 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
   const { web, get, json } = useMemo(() => {
     // Purge data
     const face = getMode(data.options.eyes, data.options.tongue);
+    const mode = face !== `u` ? face : undefined;
+
     console.log(face);
     const options = {
       cow: data.options.cow !== `default` ? data.options.cow : undefined,
       action: data.options.action === `think` ? `think` : undefined,
-      mode: face !== `c` ? face : undefined,
-      eyes: (face === `c`) && (data.options.eyes !== `oo`) ? data.options.eyes : undefined,
-      tongue: (face === `c`) && (data.options.tongue.length > 0) ? data.options.tongue : undefined,
+      mode: mode !== `c` ? mode : undefined,
+      eyes: (mode === `c`) && (data.options.eyes !== `oo`) ? data.options.eyes : undefined,
+      tongue: (mode === `c`) && (data.options.tongue.length > 0) ? data.options.tongue : undefined,
       wrap: data.options.wrap !== 40 ? data.options.wrap : undefined
     };
 

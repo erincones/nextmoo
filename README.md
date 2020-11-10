@@ -61,7 +61,7 @@ default value is an empty string.
 is 30 for website and 40 for API requests. To display the message exactly as
 provided (no wrap), use an empty string as wrap value.
 
-For website links or `GET` requests use the query string to privide the
+For website links or `GET` requests use the query string to provide the
 parameters. For `POST` requests provide the parameters as a JSON on the request
 body.
 
