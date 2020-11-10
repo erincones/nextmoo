@@ -1,15 +1,15 @@
-import { line, ul, item } from "./utils";
+import { line, ul, item, repo } from "./utils";
 
 
 /**
  * License URL
  */
-const license = `https://github.com/erincones/nextmoo/blob/master/LICENSE`;
+const license = `${repo}/blob/master/LICENSE`;
 
 /**
  * README URL
  */
-const readme = `https://github.com/erincones/nextmoo#readme`;
+const readme = `${repo}#readme`;
 
 
 /**

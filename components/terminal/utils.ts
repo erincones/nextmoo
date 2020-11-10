@@ -17,3 +17,8 @@ export const item = `truncate pl-ch`;
  * Web url
  */
 export const url = `https://nextmoo.vercel.app`;
+
+/**
+ * Repository URL
+ */
+export const repo = `https://github.com/erincones/nextmoo`;
