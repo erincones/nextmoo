@@ -4,7 +4,12 @@ import { line, ul, item } from "./utils";
 /**
  * License URL
  */
-const url = `https://github.com/erincones/nextmoo/blob/master/LICENSE`;
+const license = `https://github.com/erincones/nextmoo/blob/master/LICENSE`;
+
+/**
+ * README URL
+ */
+const readme = `https://github.com/erincones/nextmoo#readme`;
 
 
 /**
@@ -15,7 +20,8 @@ export const Help = (): JSX.Element => {
     <pre className={line}>
       Moo! Developed by Erick Rincones.{`\n`}
       Special thanks to Aury Rincones.{`\n`}
-      Licensed under the <a href={url} target="noopener noreferrer" className="underline focus:outline-none">MIT license</a>.{`\n`}
+      Licensed under the <a href={license} target="noopener noreferrer" className="underline focus:outline-none">MIT license</a>.{`\n`}
+      For more details visit: <a href={readme} target="noopener noreferrer" className="underline focus:outline-none">{readme}</a>{`\n`}
       {`\n`}
       These shell commands are defined internally. Type `help&apos; to see this list.{`\n`}
       {`\n`}

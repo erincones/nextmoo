@@ -78,7 +78,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
 
     const face = getFace(e.currentTarget.value);
     setEyes(face.eyes);
-    setTongue(face.tongue.padEnd(2));
+    setTongue(face.tongue);
   }, []);
 
   // Tongue change handler

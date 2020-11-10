@@ -27,10 +27,11 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
   const { web, get, json } = useMemo(() => {
     // Purge data
     const face = getMode(data.options.eyes, data.options.tongue);
+    console.log(face);
     const options = {
       cow: data.options.cow !== `default` ? data.options.cow : undefined,
       action: data.options.action === `think` ? `think` : undefined,
-      mode: face !== `c` ? data.options.mode : undefined,
+      mode: face !== `c` ? face : undefined,
       eyes: (face === `c`) && (data.options.eyes !== `oo`) ? data.options.eyes : undefined,
       tongue: (face === `c`) && (data.options.tongue.length > 0) ? data.options.tongue : undefined,
       wrap: data.options.wrap !== 40 ? data.options.wrap : undefined
@@ -53,10 +54,7 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
     const getParams = `${query}${data.options.wrap !== 40 ? `${sep}${wrap}` : ``}`;
 
     // JSON POST
-    const post = {
-      message,
-      options: Object.values(options).some(value => value !== undefined) ? options : undefined
-    };
+    const post = { message, ...options };
 
     // Return share options
     return {
@@ -71,7 +69,7 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
   return (
     <pre className={line}>
       &nbsp;Web: <span className="select-all"><a href={web} target="noopener noreferrer" className="underline focus:outline-none">{web}</a></span>{`\n`}
-      &nbsp;GET: <span className="select-all">curl <a href={get} target="noopener noreferrer" className="underline focus:outline-none">{get}</a></span>{`\n`}
+      &nbsp;GET: <span className="select-all">curl &apos;<a href={get} target="noopener noreferrer" className="underline focus:outline-none">{get}</a>&apos;</span>{`\n`}
       &nbsp;POST: <span className="select-all">curl <a href={api} target="noopener noreferrer" className="underline focus:outline-none">{api}</a> -X POST -d &apos;{json}&apos;</span>
     </pre>
   );
