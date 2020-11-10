@@ -20,7 +20,7 @@ issues have been solved and many improvements have been made.
 
 ## Website
 
-Start to create and share custom cows here: [https://nextmoo.verce.app][nextmoo]
+Start to create and share custom cows here: [https://nextmoo.vercel.app][nextmoo]
 
 Change the fields to customize the cow and use the `share` command in the
 terminal to get the direct link to your custom cow and the `curl` commands to
@@ -34,7 +34,7 @@ see the full list.
 ## Custom website cows and API reference
 
 You can share custom cow with a direct link to the website and request custom
-cows on `text/plain` format from [https://nextmoo.verce.app/api][nextmooapi]
+cows on `text/plain` format from [https://nextmoo.vercel.app/api][nextmooapi]
 with The `GET` or `POST` methods.
 
 Use the next parameters to customize your cow:
@@ -56,7 +56,7 @@ extension. Eg: `dragon` or `stegosaurus`.
   - `eyes`: Custom cow eyes. Only the first two characters will be used. The
 default value is `oo`
   - `tongue`: Custom cow tongue. Only the first two characters will be used. The
-default value is a empty string.
+default value is an empty string.
   - `wrap`: Wrap column. Where the message should be wrapped. The default value
 is 30 for website and 40 for API requests. To display the message exactly as
 provided (no wrap), use an empty string as wrap value.
@@ -147,7 +147,7 @@ Share and enjoy!
 [nextjs]: https://nextjs.org
 [vercel]: https://vercel.com
 
-[nextmoo]: https://nextmoo.verce.app
-[nextmooapi]: https://nextmoo.verce.app/api
+[nextmoo]: https://nextmoo.vercel.app
+[nextmooapi]: https://nextmoo.vercel.app/api
 [cows]: https://github.com/erincones/nextmoo/tree/master/lib/moo/cows
 [LICENSE]: LICENSE
