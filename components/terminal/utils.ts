@@ -12,3 +12,8 @@ export const ul = `columns-2 gap-0 w-max-content max-w-full`;
  * Item classes
  */
 export const item = `truncate pl-ch`;
+
+/**
+ * Web url
+ */
+export const url = `https://nextmoo.vercel.app`;

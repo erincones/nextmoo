@@ -4,19 +4,19 @@ import { SEO } from "../components/seo";
 import { Controls } from "../components/controls";
 import { Terminal } from "../components/terminal";
 
-import { moo, MooOptions } from "../lib/moo";
+import { MooData } from "../lib/moo";
 
 
 /**
  * Home component
  */
 const Home = (): JSX.Element => {
-  const [ cow, setCow ] = useState(``);
+  const [ mooData, setMooData ] = useState<MooData>({ message: `` });
 
 
   // Options change handler
-  const handleOptionsHandler = useCallback((message: string, options: MooOptions) => {
-    setCow(moo(message, options));
+  const handleOptionsHandler = useCallback((mooData: MooData) => {
+    setMooData(mooData);
   }, []);
 
 
@@ -27,7 +27,7 @@ const Home = (): JSX.Element => {
 
       <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
         <Controls onChange={handleOptionsHandler} />
-        <Terminal header={cow} />
+        <Terminal data={mooData} />
       </div>
     </>
   );

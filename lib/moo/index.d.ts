@@ -16,10 +16,18 @@ export interface CowOptions extends Partial<Face> {
 }
 
 /**
- * cowsay and cowthink options interface
+ * moo options interface
  */
 export interface MooOptions extends CowOptions {
   readonly action?: `say` | `think`;
+}
+
+/**
+ * moo data interface
+ */
+export interface MooData {
+  readonly message: string;
+  readonly options?: MooOptions;
 }
 
 /**

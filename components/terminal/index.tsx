@@ -1,21 +1,23 @@
-import { useRef, useMemo, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent } from "react";
+import { useRef, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent } from "react";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
-import { Ls } from "./ls";
 import { History } from "./history";
+import { Ls } from "./ls";
+import { Share } from "./share";
 import { Bad } from "./bad";
 
 import { line } from "./utils";
 
 import { useHistory } from "../../hooks/history";
+import { moo, MooData } from "../../lib/moo";
 
 
 /**
  * Terminal component properties
  */
 interface TerminalProps {
-  readonly header?: string;
+  readonly data: MooData;
 }
 
 
@@ -24,23 +26,13 @@ interface TerminalProps {
  *
  * @param props Terminal component properties
  */
-export const Terminal = ({ header }: TerminalProps): JSX.Element => {
+export const Terminal = ({ data }: TerminalProps): JSX.Element => {
   const user = useRef(`user`);
   const [ height, setHeight ] = useState<number>();
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
   const [ output, setOutput ] = useState<JSX.Element[]>([]);
-  const history = useHistory({ [user.current]: { stack: [ `help`], current: 1 } });
-
-
-  // Header
-  const head = useMemo(() =>
-    header === undefined ? null : (
-      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
-        {header}
-      </pre>
-    )
-  , [ header ]);
+  const history = useHistory({ [user.current]: { stack: [ `help` ], current: 1 } });
 
 
   // Execute command
@@ -78,14 +70,16 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       // Clear terminal
       case `clear`: return null;
 
-      // Help
-      case `help`: return <Help key={key} />;
-
-      // List current folder files
-      case `ls`: return <Ls key={key} />;
-
       // Echo
       case `echo`: return <pre key={key}>{args.length === 0 ? `\n` : args}</pre>;
+
+      // Exit from super user
+      case `exit`:
+        user.current = `user`;
+        return undefined;
+
+      // Help
+      case `help`: return <Help key={key} />;
 
       // Show or clear history
       case `history`:
@@ -97,10 +91,13 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
           return <History key={key} stack={history.stack(user.current)} />;
         }
 
-      // Exit from super user
-      case `exit`: user.current = `user`;
+      // List current folder files
+      case `ls`: return <Ls key={key} />;
 
-      // Fallthrough to sudo without command
+      // Share custom cow
+      case `share`: return <Share data={data} />;
+
+      // Sudo without command
       case `sudo`: return undefined;
 
       // Enable super user
@@ -109,7 +106,7 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
       // Unknown command
       default: return <Bad key={key} shell="moo!" command={command} />;
     }
-  }, [ history ]);
+  }, [ data, history ]);
 
 
   // Chang eHandler
@@ -198,8 +195,10 @@ export const Terminal = ({ header }: TerminalProps): JSX.Element => {
   // Return terminal component
   return (
     <div className="flex flex-col flex-grow cursor-text px-px w-full md:w-7/12">
-      {/* Header */}
-      {head}
+      {/* Cow */}
+      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
+        {moo(data.message, data.options)}
+      </pre>
 
       {/* Terminal */}
       <div id="terminal" className="flex flex-col flex-grow overflow-y-auto md:min-h-55">

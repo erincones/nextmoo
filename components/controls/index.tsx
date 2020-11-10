@@ -5,7 +5,7 @@ import { Radio } from "./radio";
 import { Spinbox } from "./spinbox";
 import { Checkbox } from "./checkbox";
 
-import { cows, modes, getFace, getMode, MooOptions } from "../../lib/moo";
+import { cows, modes, getFace, getMode, MooOptions, MooData } from "../../lib/moo";
 import { parseOptions } from "../../utils/parse-options";
 
 
@@ -13,7 +13,7 @@ import { parseOptions } from "../../utils/parse-options";
  * Controls component properties
  */
 interface ControlsProps {
-  readonly onChange?: (message: string, options: MooOptions) => void;
+  readonly onChange?: (data: MooData) => void;
 }
 
 
@@ -152,7 +152,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
 
   // Update cow
   useEffect(() => {
-    onChange(message, { action, cow, eyes, tongue, wrap: noWrap ? false : wrapColumn });
+    onChange({ message, options: { action, cow, eyes, tongue, wrap: noWrap ? false : wrapColumn } });
   }, [ message, action, cow, eyes, tongue, wrapColumn, noWrap, onChange ]);
 
 

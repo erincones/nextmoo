@@ -2,6 +2,12 @@ import { line, ul, item } from "./utils";
 
 
 /**
+ * License URL
+ */
+const url = `https://github.com/erincones/nextmoo/blob/master/LICENSE`;
+
+
+/**
  * Help component
  */
 export const Help = (): JSX.Element => {
@@ -9,7 +15,7 @@ export const Help = (): JSX.Element => {
     <pre className={line}>
       Moo! Developed by Erick Rincones.{`\n`}
       Special thanks to Aury Rincones.{`\n`}
-      Licensed under the <a href="https://github.com/erincones/nextmoo/blob/master/LICENSE" target="noopener noreferrer" className="underline focus:outline-none">MIT license</a>.{`\n`}
+      Licensed under the <a href={url} target="noopener noreferrer" className="underline focus:outline-none">MIT license</a>.{`\n`}
       {`\n`}
       These shell commands are defined internally. Type `help&apos; to see this list.{`\n`}
       {`\n`}
@@ -19,6 +25,7 @@ export const Help = (): JSX.Element => {
         <li className={item}>help</li>
         <li className={item}>history [-c]</li>
         <li className={item}>ls</li>
+        <li className={item}>share</li>
         <li className={item}>sudo [COMMAND]</li>
       </ul>
     </pre>
