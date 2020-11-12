@@ -2,11 +2,6 @@ import { line, ul, item, repo } from "./utils";
 
 
 /**
- * License URL
- */
-const license = `${repo}/blob/master/LICENSE`;
-
-/**
  * README URL
  */
 const readme = `${repo}#readme`;
@@ -18,9 +13,7 @@ const readme = `${repo}#readme`;
 export const Help = (): JSX.Element => {
   return (
     <pre className={line}>
-      Moo! Developed by Erick Rincones.{`\n`}
-      Special thanks to Aury Rincones.{`\n`}
-      Licensed under the <a href={license} target="noopener noreferrer" className="underline focus:outline-none">MIT license</a>.{`\n`}
+      Moo! Developed by Erick Rincones. Special thanks to Aury Rincones.{`\n`}
       For more details visit: <a href={readme} target="noopener noreferrer" className="underline focus:outline-none">{readme}</a>{`\n`}
       {`\n`}
       These shell commands are defined internally. Type `help&apos; to see this list.{`\n`}
