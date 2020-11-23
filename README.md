@@ -1,6 +1,7 @@
 # Next Moo!
 
-Web version of the classic cowsay and cowthink commands, now with and API.
+Web version of the classic cowsay and cowthink commands, now with an API
+endpoint.
 
 This is a clone of the [Moo!][moo] project coded from scratch, this time
 developed with [Next.js][nextjs] and deployed with [Vercel][vercel]. Many
