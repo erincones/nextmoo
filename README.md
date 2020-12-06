@@ -34,7 +34,7 @@ see the full list.
 
 ## Custom website cows and API reference
 
-You can share custom cow with a direct link to the website and request custom
+You can share custom cows with a direct link to the website and request custom
 cows on `text/plain` format from [https://nextmoo.vercel.app/api][nextmooapi]
 with The `GET` or `POST` methods.
 
@@ -59,8 +59,10 @@ default value is `oo`
   - `tongue`: Custom cow tongue. Only the first two characters will be used. The
 default value is an empty string.
   - `wrap`: Wrap column. Where the message should be wrapped. The default value
-is 30 for website and 40 for API requests. To display the message exactly as
-provided (no wrap), use an empty string as wrap value.
+is 30 for website and 40 for API requests. For `POST` requests this field
+accepts strings and integers. To display the message exactly as provided
+(no wrap), use an empty string as wrap value, in general any invalid integer
+such as `false`, `null`, arrays or objects are assumed to be no wrap.
 
 For website links or `GET` requests use the query string to provide the
 parameters. For `POST` requests provide the parameters as a JSON on the request
