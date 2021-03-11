@@ -18,7 +18,7 @@ const api = `${url}/api`;
 
 
 /**
- * Share componentPerfecto, buen provecho. Estaré aquí pendiente, cuando me avises, comenzamos.
+ * Share component
  *
  * @param props Share component properties
  */
@@ -29,7 +29,6 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
     const face = getMode(data.options.eyes, data.options.tongue);
     const mode = face !== `u` ? face : undefined;
 
-    console.log(face);
     const options = {
       cow: data.options.cow !== `default` ? data.options.cow : undefined,
       action: data.options.action === `think` ? `think` : undefined,
