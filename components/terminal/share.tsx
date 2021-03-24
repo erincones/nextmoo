@@ -44,7 +44,7 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
 
     const query = Object.entries({ message, ...options, wrap: undefined })
       .reduce<string[]>((query, [ key, value ]) =>
-        query.concat(value !== undefined ? `${key}=${encodeURIComponent(value)}` : ``)
+        query.concat(value !== undefined ? `${key}=${encodeURIComponent(value).replaceAll(`%20`, `+`)}` : ``)
       , [])
       .filter(param => param.length > 0)
       .join(`&`);
