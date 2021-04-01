@@ -38,7 +38,7 @@ const config = {
  * @param {function} helper.addBase Registering new base styles
  * @param {function} helper.e Escaping strings meant to be used in class names
  * @param {function} helper.theme Looking up values in the user's theme configuration
- * @param {function} helper.theme Looking up values in the user's variants configuration
+ * @param {function} helper.variants Looking up values in the user's variants configuration
  */
 const terminal = ({ addUtilities, addBase, e, theme, variants }) => {
   // Process colors

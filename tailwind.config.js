@@ -3,16 +3,15 @@ const terminal = require(`./tailwind-plugins/terminal`);
 
 
 module.exports = {
-  future: {
-    removeDeprecatedGapUtilities: true,
-    purgeLayersByDefault: true
-  },
   purge: {
     mode: `all`,
     content: [
       `pages/**/*.{js,ts,jsx,tsx}`,
       `components/**/*.{js,ts,jsx,tsx}`
-    ]
+    ],
+    options: {
+      keyframes: true,
+    }
   },
   theme: {
     colors: {
