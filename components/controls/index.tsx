@@ -1,11 +1,17 @@
 import { useState, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/router";
 
+import { CowAction } from "cowsayjs/lib/box";
+import { MooOptions } from "../../types";
+
+import { corral } from "cowsayjs/cows";
+import { modes, modeFace, faceMode } from "cowsayjs/lib/mode";
+
+
 import { Radio } from "./radio";
 import { Spinbox } from "./spinbox";
 import { Checkbox } from "./checkbox";
 
-import { cows, modes, getFace, getMode, MooOptions, MooData } from "../../lib/moo";
 import { parseOptions } from "../../utils/parse-options";
 
 
@@ -13,7 +19,7 @@ import { parseOptions } from "../../utils/parse-options";
  * Controls component properties
  */
 interface ControlsProps {
-  readonly onChange?: (data: MooData) => void;
+  readonly onChange?: (data: MooOptions) => void;
 }
 
 
@@ -33,7 +39,7 @@ const clamp = (str: string, last = false) =>
  */
 export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.Element => {
   const router = useRouter();
-  const [ action, setAction ] = useState<MooOptions["action"]>(`say`);
+  const [ action, setAction ] = useState<CowAction>(`say`);
   const [ cow, setCow ] = useState(`default`);
   const [ mode, setMode ] = useState(`u`);
   const [ eyes, setEyes ] = useState(`oo`);
@@ -45,7 +51,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
 
   // Cows options
   const cowsOptions = useMemo(() =>
-    cows.map(({ name }, i) => (
+    corral.map(({ name }, i) => (
       <option key={i} value={name}>
         {`${name[0].toUpperCase()}${name.slice(1).replace(/[.-]/g, ` `)}`}
       </option>
@@ -72,29 +78,38 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
     setCow(e.currentTarget.value);
   }, []);
 
+  // Action change handler
+  const handleAction = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setAction(e.currentTarget.id as CowAction);
+  }, []);
+
   // Mode change handler
   const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setMode(e.currentTarget.value);
 
-    const face = getFace(e.currentTarget.value);
-    setEyes(face.eyes);
-    setTongue(face.tongue);
+    const face = modeFace(e.currentTarget.value);
+    setEyes(face.eyes || ``);
+    setTongue(face.tongue || ``);
   }, []);
 
   // Tongue change handler
   const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const eyes = clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2);
+    const { value, selectionStart } = e.currentTarget;
+    const eyes = clamp(value, selectionStart !== null ? selectionStart > 2 : false);
+    const mode = faceMode({ eyes, tongue });
 
     setEyes(eyes);
-    setMode(getMode(eyes, tongue));
+    setMode((mode.eyes === eyes) && (mode.tongue) === tongue ? mode.id : `c`);
   }, [ tongue ]);
 
   // Tongue change handler
   const handleTongueChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const tongue = clamp(e.currentTarget.value, e.currentTarget.selectionStart > 2);
+    const { value, selectionStart } = e.currentTarget;
+    const tongue = clamp(value, selectionStart !== null ? selectionStart > 2 : false);
+    const mode = faceMode({ eyes, tongue });
 
     setTongue(tongue);
-    setMode(getMode(eyes, tongue));
+    setMode((mode.eyes === eyes) && (mode.tongue) === tongue ? mode.id : `c`);
   }, [ eyes ]);
 
   // Message change handler
@@ -107,47 +122,50 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
   useEffect(() => {
     // Parse query string options
     const { message, options } = parseOptions(router.query);
+    const opts = options || {};
 
     // Set given values
     setMessage(message === undefined ? `moo!` : message);
 
-    if (options.action === `think`) {
+    if (opts.action === `think`) {
       setAction(`think`);
     }
 
-    if (cows.some(({ name }) => name === options.cow)) {
-      setCow(options.cow);
+    if (corral.some(({ name }) => name === opts.cow)) {
+      setCow(opts.cow || `default`);
     }
 
-    if (router.query.wrap !== undefined) {
-      if (options.wrap === false) {
+    if (opts.wrap !== undefined) {
+      if ((opts.wrap === false) || (opts.wrap === null)) {
         setNoWrap(true);
       }
       else {
-        setWrapColumn(options.wrap < 0 ? 0 : options.wrap);
+        const wrap = typeof opts.wrap === `string` ? parseInt(opts.wrap) : opts.wrap;
+        const column = wrap === true || isNaN(wrap) ? 40 : wrap;
+        setWrapColumn(column < 0 ? 0 : column);
       }
     }
 
-    if ((options.eyes !== undefined) || (options.tongue !== undefined)) {
-      const eyes = options.eyes === undefined ? `oo` : options.eyes.slice(0, 2);
-      const tongue = options.tongue === undefined ? `` : options.tongue.slice(0, 2);
-      const mode = getMode(eyes, tongue);
+    if ((opts.eyes !== undefined) || (opts.tongue !== undefined)) {
+      const eyes = opts.eyes === undefined ? `oo` : opts.eyes.slice(0, 2);
+      const tongue = opts.tongue === undefined ? `` : opts.tongue.slice(0, 2);
+      const mode = faceMode({ eyes, tongue });
 
-      setMode(mode);
+      setMode((mode.eyes === eyes) && (mode.tongue) === tongue ? mode.id : `c`);
       setEyes(eyes);
       setTongue(tongue);
     }
-    else if (modes.some(({ id }) => id === options.mode)) {
-      const { eyes, tongue } = getFace(options.mode);
+    else if (modes.some(({ id }) => id === opts.mode)) {
+      const { eyes, tongue } = modeFace(opts.mode);
 
-      setMode(options.mode);
-      setEyes(eyes);
-      setTongue(tongue);
+      setMode(opts.mode || `d`);
+      setEyes(eyes || `oo`);
+      setTongue(tongue || ``);
     }
 
 
     // Focus message
-    document.getElementById(`message`).focus();
+    document.getElementById(`message`)?.focus();
   }, [ router ]);
 
   // Update cow
@@ -176,10 +194,10 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
             <legend className="cursor-default px-1">Action</legend>
             <div className="flex">
-              <Radio name="action" id="say" checked={action === `say`} onChange={setAction} className="w-3/7">
+              <Radio name="action" id="say" checked={action === `say`} onChange={handleAction} className="w-3/7">
                 Say
               </Radio>
-              <Radio name="action" id="think" checked={action === `think`} onChange={setAction} className="pl-2 w-4/7">
+              <Radio name="action" id="think" checked={action === `think`} onChange={handleAction} className="pl-2 w-4/7">
                 Think
               </Radio>
             </div>

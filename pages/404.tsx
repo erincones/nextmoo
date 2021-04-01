@@ -1,6 +1,6 @@
 import { SEO } from "../components/seo";
 
-import { cowsay } from "../lib/moo";
+import { cowsay } from "cowsayjs";
 
 
 /**

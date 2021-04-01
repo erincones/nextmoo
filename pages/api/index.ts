@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { moo } from "../../lib/moo";
+import { moo } from "cowsayjs";
 import { parseBody } from "../../utils/parse-body";
-import { parseOptions, Options } from "../../utils/parse-options";
+import { parseOptions } from "../../utils/parse-options";
 
 
 /**
@@ -19,7 +19,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 
 
   // Moo options
-  let options: Options;
+  let options;
 
   // Check method
   switch (req.method) {

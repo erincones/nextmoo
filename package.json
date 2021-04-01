@@ -19,7 +19,7 @@
   },
   "homepage": "https://nextmoo.vercel.app",
   "dependencies": {
-    "cowsayjs": "^0.3.3",
+    "cowsayjs": "^0.3.4",
     "next": "^10.1.2",
     "postcss-flexbugs-fixes": "^5.0.0",
     "postcss-import": "^14.0.1",

@@ -27,7 +27,7 @@ export const Checkbox = ({ children, id, checked, onChange, className }: Checkbo
 
   // Handle label click
   const handleLabelClick = useCallback(() => {
-    document.getElementById(buttonId).focus();
+    document.getElementById(buttonId)?.focus();
   }, [ buttonId ]);
 
   // Handle change

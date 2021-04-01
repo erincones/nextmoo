@@ -1,17 +1,4 @@
-import { useMemo, useCallback, Dispatch, SetStateAction } from "react";
-
-
-/**
- * Radio component properties
- */
-interface RadioProps {
-  readonly children?: string;
-  readonly id: string;
-  readonly name: string;
-  readonly checked: boolean;
-  readonly onChange: Dispatch<SetStateAction<string>>;
-  readonly className?: string;
-}
+import { useMemo, useCallback, InputHTMLAttributes } from "react";
 
 
 /**
@@ -19,7 +6,7 @@ interface RadioProps {
  *
  * @param props Radio component properties
  */
-export const Radio = ({ children, id, name, checked, onChange, className }: RadioProps): JSX.Element => {
+export const Radio = ({ children, id, name, checked, onChange, className }: InputHTMLAttributes<HTMLInputElement>): JSX.Element => {
   // Button id
   const buttonId = useMemo(() =>
     `${name}-${id}`
@@ -28,13 +15,13 @@ export const Radio = ({ children, id, name, checked, onChange, className }: Radi
 
   // Handle label click
   const handleLabelClick = useCallback(() => {
-    document.getElementById(buttonId).focus();
+    document.getElementById(buttonId)?.focus();
   }, [ buttonId ]);
 
   // Handle click and change
-  const handleClickChange = useCallback(() => {
-    onChange(id);
-  }, [ id, onChange ]);
+  const handleClickChange = useCallback(e => {
+    onChange!(e);
+  }, [ onChange ]);
 
 
   // Return radio

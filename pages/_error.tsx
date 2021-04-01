@@ -1,6 +1,6 @@
 import { SEO } from "../components/seo";
 
-import { cowsay } from "../lib/moo";
+import { cowsay } from "cowsayjs";
 
 
 /**
@@ -16,7 +16,7 @@ interface Error500Props {
  *
  * @param status HTTP status code
  */
-const parseStatus = (status: number) => {
+const parseStatus = (status: number): string => {
   switch (status) {
     case 500: return `500: Internal server error`;
     case 501: return `501: Not implemented`;
@@ -32,7 +32,7 @@ const parseStatus = (status: number) => {
     case 511: return `511: Network authentication required`;
     case 598: return `598: Network read timeout error`;
     case 599: return `599: Network connect timeout error`;
-    default: `${status}: Unknown error`;
+    default: return `${status}: Unknown error`;
   }
 };
 

@@ -4,19 +4,19 @@ import { SEO } from "../components/seo";
 import { Controls } from "../components/controls";
 import { Terminal } from "../components/terminal";
 
-import { MooData } from "../lib/moo";
+import { MooOptions } from "../types";
 
 
 /**
  * Home component
  */
 const Home = (): JSX.Element => {
-  const [ mooData, setMooData ] = useState<MooData>({ message: `` });
+  const [ mooData, setMooData ] = useState<MooOptions>({});
 
 
-  // Options change handler
-  const handleOptionsHandler = useCallback((mooData: MooData) => {
-    setMooData(mooData);
+  // Data change handler
+  const handleDataChange = useCallback((data: MooOptions) => {
+    setMooData(data);
   }, []);
 
 
@@ -26,7 +26,7 @@ const Home = (): JSX.Element => {
       <SEO title="Moo!" />
 
       <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
-        <Controls onChange={handleOptionsHandler} />
+        <Controls onChange={handleDataChange} />
         <Terminal data={mooData} />
       </div>
     </>

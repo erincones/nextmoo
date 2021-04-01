@@ -1,4 +1,6 @@
-import { useRef, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent } from "react";
+import { useRef, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
+
+import { MooOptions } from "../../types";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
@@ -10,14 +12,14 @@ import { Bad } from "./bad";
 import { line } from "./utils";
 
 import { useHistory } from "../../hooks/history";
-import { moo, MooData } from "../../lib/moo";
+import { moo } from "cowsayjs";
 
 
 /**
  * Terminal component properties
  */
 interface TerminalProps {
-  readonly data: MooData;
+  readonly data: MooOptions;
 }
 
 
@@ -31,7 +33,7 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
   const [ height, setHeight ] = useState<number>();
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
-  const [ output, setOutput ] = useState<JSX.Element[]>([]);
+  const [ output, setOutput ] = useState<ReactNode[]>([]);
   const history = useHistory({ [user.current]: { stack: [ `help` ], current: 1 } });
 
 
@@ -171,7 +173,7 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
 
   // Update command padding
   useEffect(() => {
-    const padding = ` `.repeat(document.getElementById(`prompt`).innerText.length);
+    const padding = ` `.repeat(document.getElementById(`prompt`)?.innerText.length || 0);
 
     setPadding(padding);
     setCommand(padding);
@@ -179,7 +181,10 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
 
   // Adjust the command height
   useEffect(() => {
-    const { clientHeight, scrollHeight } = document.getElementById(`command`);
+    const command = document.getElementById(`command`);
+    const clientHeight = command?.clientHeight || 0;
+    const scrollHeight = command?.scrollHeight || 0;
+
     setHeight(height => (height !== undefined) || (clientHeight < scrollHeight) ? scrollHeight : height);
   }, [ command ]);
 

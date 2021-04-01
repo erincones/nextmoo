@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 
-import { getMode, MooData } from "../../lib/moo";
+import { MooOptions } from "../../types";
+
+import { faceMode } from "cowsayjs/lib/mode";
 import { line, url } from "./utils";
 
 
@@ -8,7 +10,7 @@ import { line, url } from "./utils";
  * Share props
  */
 interface ShareProps {
-  readonly data: MooData;
+  readonly data: MooOptions;
 }
 
 /**
@@ -26,21 +28,24 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
   // Parsed data
   const { web, get, json } = useMemo(() => {
     // Purge data
-    const face = getMode(data.options.eyes, data.options.tongue);
-    const mode = face !== `u` ? face : undefined;
+    const opt = data.options || {};
+
+    const face = faceMode({ eyes: opt.eyes, tongue: opt.tongue });
+    const mode = face.id !== `u` ? face.id : undefined;
+    const custom = mode === `c`;
 
     const options = {
-      cow: data.options.cow !== `default` ? data.options.cow : undefined,
-      action: data.options.action === `think` ? `think` : undefined,
-      mode: mode !== `c` ? mode : undefined,
-      eyes: (mode === `c`) && (data.options.eyes !== `oo`) ? data.options.eyes : undefined,
-      tongue: (mode === `c`) && (data.options.tongue.length > 0) ? data.options.tongue : undefined,
-      wrap: data.options.wrap !== 40 ? data.options.wrap : undefined
+      cow: opt.cow !== `default` ? opt.cow : undefined,
+      action: opt.action === `think` ? `think` : undefined,
+      mode: custom ? mode : undefined,
+      eyes: custom && (opt.eyes !== `oo`) ? opt.eyes : undefined,
+      tongue: custom && opt.tongue ? opt.tongue : undefined,
+      wrap: `${opt.wrap}` !== "40" ? opt.wrap : undefined
     };
 
     // Build query string
-    const message = data.message.length > 0 ? data.message : undefined;
-    const wrap = `wrap=${encodeURIComponent(data.options.wrap !== false ? data.options.wrap : ``)}`;
+    const message = data.message ? data.message : undefined;
+    const wrap = `wrap=${encodeURIComponent(opt.wrap !== false && opt.wrap !== null && opt.wrap !== undefined ? opt.wrap : ``)}`;
 
     const query = Object.entries({ message, ...options, wrap: undefined })
       .reduce<string[]>((query, [ key, value ]) =>
@@ -51,8 +56,8 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
 
     // Append wrap parameter
     const sep = query.length > 0 ? `&` : ``;
-    const webParams = `${query}${data.options.wrap !== 30 ? `${sep}${wrap}` : ``}`;
-    const getParams = `${query}${data.options.wrap !== 40 ? `${sep}${wrap}` : ``}`;
+    const webParams = `${query}${opt.wrap !== 30 ? `${sep}${wrap}` : ``}`;
+    const getParams = `${query}${opt.wrap !== 40 ? `${sep}${wrap}` : ``}`;
 
     // JSON POST
     const post = { message, ...options };
