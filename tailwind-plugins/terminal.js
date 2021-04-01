@@ -54,7 +54,7 @@ const terminal = ({ addUtilities, addBase, e, theme, variants }) => {
   // HTML base style
   addBase({
     html: {
-      fontFamily: theme(`fontFamily.mono`, [ `monospace` ]).join(`, `),
+      fontFamily: theme(`fontFamily.mono`, [ `monospace` ]),
       fontSize: 16,
       color: white,
       backgroundColor: black,
@@ -119,4 +119,8 @@ const terminal = ({ addUtilities, addBase, e, theme, variants }) => {
   });
 };
 
+
+/**
+ * Export the terminal plugin
+ */
 module.exports = plugin(terminal, config);
