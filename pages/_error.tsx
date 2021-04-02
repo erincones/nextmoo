@@ -45,7 +45,7 @@ const parseStatus = (status: number): string => {
 const Error500 = ({ status }: Error500Props): JSX.Element => {
   return (
     <>
-      <SEO title="Moo! - Server error" />
+      <SEO title="NextMoo! - Server error" />
 
       <pre className="whitespace-pre overflow-x-auto ">
         {cowsay(parseStatus(status), { mode: `d` })}

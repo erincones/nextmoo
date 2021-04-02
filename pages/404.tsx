@@ -9,7 +9,7 @@ import { cowsay } from "cowsayjs";
 const Error404 = (): JSX.Element => {
   return (
     <>
-      <SEO title="Moo! - Not found" />
+      <SEO title="NextMoo! - Not found" />
 
       <pre className="whitespace-pre overflow-x-auto ">
         {cowsay(`404: Not found`, { mode: `d` })}

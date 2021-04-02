@@ -13,7 +13,7 @@ const Home = (): JSX.Element => {
   // Return the home component
   return (
     <Store>
-      <SEO title="Moo!" />
+      <SEO title="NextMoo!" />
 
       <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
         <Controls/>
