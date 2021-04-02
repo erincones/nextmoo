@@ -1,4 +1,4 @@
-import { useMemo, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
+import { useRef, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
 
 
 /**
@@ -6,7 +6,7 @@ import { useMemo, useCallback, Dispatch, SetStateAction, ChangeEvent } from "rea
  */
 interface CheckboxProps {
   readonly children?: string;
-  readonly id: string;
+  readonly id?: string;
   readonly checked: boolean;
   readonly onChange: Dispatch<SetStateAction<boolean>>;
   readonly className?: string;
@@ -19,16 +19,14 @@ interface CheckboxProps {
  * @param props Checkbox component properties
  */
 export const Checkbox = ({ children, id, checked, onChange, className }: CheckboxProps): JSX.Element => {
-  // Button id
-  const buttonId = useMemo(() =>
-    `${id}-button`
-  ,[ id ]);
+  // Button
+  const button = useRef<HTMLButtonElement>(null);
 
 
   // Handle label click
   const handleLabelClick = useCallback(() => {
-    document.getElementById(buttonId)?.focus();
-  }, [ buttonId ]);
+    button.current?.focus();
+  }, []);
 
   // Handle change
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +45,7 @@ export const Checkbox = ({ children, id, checked, onChange, className }: Checkbo
       <input id={id} type="checkbox" value={id} checked={checked} onChange={handleChange} className="hidden" />
       <label htmlFor={id} onClick={handleLabelClick}>
         <span className="cursor-pointer">
-          [<button id={buttonId} type="button" tabIndex={0} onClick={handleClick} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `x` : ` `}</button>]
+          [<button ref={button} type="button" tabIndex={0} onClick={handleClick} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `x` : ` `}</button>]
         </span>
         {children}
       </label>

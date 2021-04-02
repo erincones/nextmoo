@@ -1,11 +1,11 @@
-import { useCallback, Dispatch, SetStateAction, ChangeEvent, WheelEvent } from "react";
+import { useState, useCallback, Dispatch, SetStateAction, ChangeEvent, WheelEvent, useEffect } from "react";
 
 
 /**
  * Spinbox component properties
  */
 interface SpinboxProps {
-  readonly value: number;
+  readonly value?: number;
   readonly min?: number;
   readonly max?: number;
   readonly step?: number;
@@ -26,51 +26,60 @@ const limit = 999999999999999;
  *
  * @param param0 Spinbox component properties
  */
-export const Spinbox = ({ value, min = -limit, max = limit, step = 1, disabled, onChange = () => { return; }, className }: SpinboxProps): JSX.Element => {
+export const Spinbox = ({ value = 0, min = -limit, max = limit, step = 1, disabled, onChange, className }: SpinboxProps): JSX.Element => {
+  const [ state, setState ] = useState(value);
+
+
   // Value handler
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     // Empty string
     if (e.currentTarget.value.length === 0) {
-      onChange(0);
+      setState(0);
     }
 
     // Parse string and check range
     else if (/^\d*$|^0x[\dA-Fa-f]+$/.test(e.currentTarget.value)) {
-      const value = parseInt(e.currentTarget.value);
+      const parsed = parseInt(e.currentTarget.value);
 
-      if ((value >= min) && (value <= max)) {
-        onChange(value);
+      if ((parsed >= min) && (parsed <= max)) {
+        setState(parsed);
       }
     }
-  }, [ min, max, onChange ]);
+  }, [ min, max ]);
 
   // Wheel handler
   const handleWheel = useCallback((e: WheelEvent<HTMLInputElement>) => {
     if (disabled === false) {
       if (e.deltaY > 0) {
-        onChange(value => (value - step) >= min ? value - step : value);
+        setState(state => (state - step) >= min ? state - step : state);
       }
       else {
-        onChange(value => (value + step) <= max ? value + step : value);
+        setState(state => (state + step) <= max ? state + step : state);
       }
     }
-  }, [ disabled, min, max, step, onChange ]);
+  }, [ disabled, min, max, step ]);
 
   // Up click handler
   const handleUpClick = useCallback(() => {
-    onChange(value => value < max ? value + 1 : value);
-  }, [ max, onChange ]);
+    setState(state => state < max ? state + 1 : state);
+  }, [ max ]);
 
   // Down click handler
   const handleDownClick = useCallback(() => {
-    onChange(value => value > min ? value - 1 : value);
-  }, [ min, onChange ]);
+    setState(state => state > min ? state - 1 : state);
+  }, [ min ]);
+
+
+  // Update value
+  useEffect(() => {
+    onChange?.(state);
+  }, [ onChange, state ]);
 
 
   // Return Spinbox
   return (
     <div className={`flex ${className}`}>
-      <input id="wrap-col" type="text" inputMode="numeric" value={value} min={min} max={max} disabled={disabled} onChange={handleChange} onWheel={handleWheel} className="bg-transparent text-white disabled:text-gray-light bg-right bg-no-repeat focus:outline-none w-full-3" />
+      <input id="wrap-col" type="text" inputMode="numeric" value={state} min={min} max={max} disabled={disabled} onChange={handleChange} onWheel={handleWheel} className="bg-transparent text-white disabled:text-gray-light bg-right bg-no-repeat focus:outline-none w-full-3" />
 
       {/* Spin buttons */}
       <div className="flex flex-col w-3">

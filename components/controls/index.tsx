@@ -78,11 +78,6 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
     setCow(e.currentTarget.value);
   }, []);
 
-  // Action change handler
-  const handleAction = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setAction(e.currentTarget.id as CowAction);
-  }, []);
-
   // Mode change handler
   const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     setMode(e.currentTarget.value);
@@ -194,10 +189,10 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
             <legend className="cursor-default px-1">Action</legend>
             <div className="flex">
-              <Radio name="action" id="say" checked={action === `say`} onChange={handleAction} className="w-3/7">
+              <Radio name="action" id="say" value={`say` as CowAction} checked={action === `say`} onChange={setAction} className="w-3/7">
                 Say
               </Radio>
-              <Radio name="action" id="think" checked={action === `think`} onChange={handleAction} className="pl-2 w-4/7">
+              <Radio name="action" id="think" value={`think` as CowAction} checked={action === `think`} onChange={setAction} className="pl-2 w-4/7">
                 Think
               </Radio>
             </div>
