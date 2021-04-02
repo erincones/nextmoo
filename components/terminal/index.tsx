@@ -1,6 +1,4 @@
-import { useRef, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode, useMemo } from "react";
-
-import { CowParsedData } from "../../utils/parse";
+import { useRef, useState, useContext, useMemo, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
@@ -13,14 +11,7 @@ import { line } from "./utils";
 
 import { useHistory } from "../../hooks/history";
 import { moo } from "cowsayjs";
-
-
-/**
- * Terminal component properties
- */
-interface TerminalProps {
-  readonly data: Required<CowParsedData>;
-}
+import { store } from "../../contexts/store";
 
 
 /**
@@ -28,21 +19,24 @@ interface TerminalProps {
  *
  * @param props Terminal component properties
  */
-export const Terminal = ({ data }: TerminalProps): JSX.Element => {
+export const Terminal = (): JSX.Element => {
   const user = useRef(`user`);
   const [ height, setHeight ] = useState<number>();
   const [ padding, setPadding ] = useState(``);
   const [ command, setCommand ] = useState(``);
   const [ output, setOutput ] = useState<ReactNode[]>([]);
   const history = useHistory({ [user.current]: { stack: [ `help` ], current: 1 } });
+  const { state } = useContext(store);
 
 
   // Cow message and options
   const { message, ...options } = useMemo(() => ({
-    ...data,
-    eyes: data.eyes.padEnd(2),
-    tongue: data.tongue.padEnd(2)
-  }), [ data ]);
+    ...state,
+    mode: undefined,
+    eyes: state.eyes.padEnd(2),
+    tongue: state.tongue.padEnd(2),
+    noWrap: undefined
+  }), [ state ]);
 
   // Execute command
   const execCommand = useCallback((input: string, key: number) => {
@@ -104,7 +98,7 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
       case `ls`: return <Ls key={key} />;
 
       // Share custom cow
-      case `share`: return <Share data={data} />;
+      case `share`: return <Share key={key} data={state} />;
 
       // Sudo without command
       case `sudo`: return undefined;
@@ -115,7 +109,7 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
       // Unknown command
       default: return <Bad key={key} shell="moo!" command={command} />;
     }
-  }, [ data, history ]);
+  }, [ state, history ]);
 
 
   // Chang eHandler
