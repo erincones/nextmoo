@@ -1,10 +1,11 @@
 import { createContext, useReducer, Dispatch, ReactNode } from "react";
-import { useRouter, NextRouter } from "next/router";
-import { searchParamsToUrlQuery } from "next/dist/next-server/lib/router/utils/querystring";
+import { parse, ParsedUrlQuery } from "querystring";
 
 import { modeFace, faceMode, CowModeData } from "cowsayjs/lib/mode";
 import { CowAction } from "cowsayjs/lib/box";
 import { parseData, CowParsedData } from "../utils/parse";
+
+import { useLayoutEffect } from "../hooks/effect";
 
 
 /**
@@ -39,6 +40,14 @@ interface BaseAction {
   readonly payload?: unknown;
   readonly meta?: unknown;
   readonly error?: boolean;
+}
+
+/**
+ * Initializser action
+ */
+interface InitializerAction extends BaseAction {
+  readonly type: `INITIALIZE`;
+  readonly payload: ParsedUrlQuery;
 }
 
 /**
@@ -77,7 +86,7 @@ interface BooleanAction extends BaseAction {
 /**
  * Action
  */
-type Action = StringAction | FaceAction | NumberAction | BooleanAction;
+type Action = InitializerAction | StringAction | FaceAction | NumberAction | BooleanAction;
 
 
 
@@ -95,6 +104,7 @@ const initialState: State = {
   noWrap: false
 };
 
+
 /**
  * Controller reducer function
  *
@@ -103,14 +113,16 @@ const initialState: State = {
  * @returns New state
  */
 const reducer = (state: State, { type, payload, meta }: Action): State => {
-  let eyes: string | undefined;
-  let tongue: string | undefined;
+  const { message: imsg, cow: f, mode: m, eyes: e, tongue: t, wrap: w, action: a } = initialState;
+  let { message, cow, mode, eyes, tongue, wrap, action } = {} as Partial<CowParsedData>;
+  let data: CowParsedData;
 
   const spaces = /^\s*$/;
   let prop: string;
   let len: number;
   let shift: boolean;
-  let mode: CowModeData;
+  let face: Partial<CowModeData>;
+  let noWrap: boolean;
 
 
   // Apply
@@ -124,12 +136,12 @@ const reducer = (state: State, { type, payload, meta }: Action): State => {
 
     // Mode
     case `SET_MODE`:
-      ({ eyes, tongue } = modeFace(payload as string));
+      ({ eyes = ``, tongue = `` } = modeFace(payload as string));
       return {
         ...state,
         mode: payload as string,
-        eyes: eyes || ``,
-        tongue: tongue || ``
+        eyes,
+        tongue
       };
 
     // Face and mode
@@ -151,79 +163,72 @@ const reducer = (state: State, { type, payload, meta }: Action): State => {
 
 
       // Check mode
-      mode = faceMode({ eyes, tongue });
-      mode.eyes = mode.eyes || `oo`;
+      face = faceMode({ eyes, tongue });
+      face.eyes = face.eyes || e;
       tongue = spaces.test(tongue) ? undefined : tongue;
 
-      if ((mode.eyes !== eyes) || (mode.tongue !== tongue)) {
-        mode.id = `c`;
+      if ((face.eyes !== eyes) || (face.tongue !== tongue)) {
+        face.id = `c`;
       }
 
       // Update mode and face
       return {
         ...state,
-        mode: mode.id,
+        mode: face.id as string,
         [type === `SET_EYES` ? `eyes` : `tongue`]: prop
       };
+
+    // Initialize
+    case `INITIALIZE`:
+      // Parse query string
+      data = parseData(payload as ParsedUrlQuery);
+
+      ({ message = imsg, cow = f, action = a } = data);
+      ({ mode = m, eyes = e, tongue, wrap = w } = data);
+
+
+      // Setup face and mode
+      face = modeFace(mode);
+      face.eyes = face.eyes || e;
+
+      if ((eyes !== face.eyes) || (tongue !== face.tongue)) {
+        mode = `c`;
+        eyes = face.eyes !== undefined ? face.eyes : eyes;
+        tongue = face.tongue !== undefined ? face.tongue : tongue;
+      }
+
+      // Setup wrap
+      noWrap = false;
+
+      switch (typeof wrap) {
+        case `number`: break;
+        case `string`: wrap = parseInt(wrap); break;
+        default:
+          noWrap = wrap !== true;
+          wrap = w;
+      }
+
+      // Invalid wrap
+      if (isNaN(wrap)) {
+        wrap = w;
+        noWrap = true;
+      }
+
+      // Return initial state
+      return {
+        message,
+        cow,
+        mode,
+        eyes: eyes.slice(0, 2),
+        tongue: (tongue || t).slice(0, 2),
+        wrap,
+        action,
+        noWrap
+      };
+
+    // Unknown
+    default: return initialState;
   }
-};
-
-
-/**
- *
- * @param param Cow parsed data
- * @returns Initial state
- */
-const initializer = ({ asPath }: NextRouter): State => {
-  // Default values
-  const { message: imsg, cow: f, action: a, mode: m, eyes: e, tongue: t, wrap: w } = initialState;
-
-  // Parse query string
-  const query = searchParamsToUrlQuery(new URLSearchParams(asPath.slice(1)));
-  const data = parseData(query);
-
-  const { message = imsg, cow = f, action = a } = data;
-  let { mode = m, eyes = e, tongue, wrap = w } = data;
-
-
-  // Setup face and mode
-  const face = modeFace(mode);
-  face.eyes = face.eyes || e;
-
-  if ((eyes !== face.eyes) || (tongue !== face.tongue)) {
-    mode = `c`;
-    eyes = face.eyes !== undefined ? face.eyes : eyes;
-    tongue = face.tongue !== undefined ? face.tongue : tongue;
-  }
-
-  // Setup wrap
-  let noWrap = false;
-
-  switch (typeof wrap) {
-    case `number`: break;
-    case `string`: wrap = parseInt(wrap); break;
-    default:
-      noWrap = wrap !== true;
-      wrap = w;
-  }
-
-  // Invalid wrap
-  if (isNaN(wrap)) {
-    wrap = w;
-    noWrap = true;
-  }
-
-  // Return initial state
-  return {
-    message,
-    cow,
-    mode,
-    eyes: eyes.slice(0, 2),
-    tongue: (tongue || t).slice(0, 2),
-    wrap,
-    action,
-    noWrap
-  };
 };
 
 
@@ -241,8 +246,18 @@ export const store = createContext<StoreValue>({
  * @param props Store provider properties
  */
 export const Store = ({ children }: StoreProps): JSX.Element => {
-  const router = useRouter();
-  const [ state, dispatch ] = useReducer(reducer, router, initializer);
+  const [ state, dispatch ] = useReducer(reducer, initialState);
+
+
+  // Setup state from query
+  useLayoutEffect(() => {
+    dispatch({
+      type: `INITIALIZE`,
+      payload: typeof window !== `undefined` ?
+        parse(window.location.search.slice(1)) : {}
+    });
+  }, []);
+
 
   // Return store provider
   return (
