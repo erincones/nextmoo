@@ -36,7 +36,7 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
       mode: custom ? mode : undefined,
       eyes: custom && (data.eyes !== `oo`) ? data.eyes : undefined,
       tongue: custom && data.tongue ? data.tongue : undefined,
-      wrap: `${data.wrap}` !== `40` ? data.wrap : undefined,
+      wrap: data.wrap !== 40 ? data.wrap : undefined,
       action: data.action === `think` ? `think` : undefined
     };
 

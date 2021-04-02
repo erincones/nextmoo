@@ -23,14 +23,11 @@ export const History = ({ stack }: HistoryProps): JSX.Element => {
   // Return history component
   return (
     <>
-      {stack.stack.length === 0 ?
-        undefined :
-        stack.stack.map((command, i) => (
-          <pre key={i} className={line}>
-            {(i + 1).toString().padStart(padding)}  {command}
-          </pre>
-        ))
-      }
+      {(stack.stack.length === 0) && stack.stack.map((command, i) => (
+        <pre key={i} className={line}>
+          {(i + 1).toString().padStart(padding)}  {command}
+        </pre>
+      ))}
     </>
   );
 };

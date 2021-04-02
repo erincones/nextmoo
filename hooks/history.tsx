@@ -47,7 +47,7 @@ export const useHistory = (initial: History = {}): HistoryHook => {
 
   // Get current command
   const current = useCallback((user: string) => {
-    const entry = history[user];
+    const entry = history.current[user];
     return (entry === undefined) || (entry.current < 0) || (entry.current < entry.stack.length) ? `` : entry.stack[entry.current];
   }, []);
 
@@ -93,7 +93,7 @@ export const useHistory = (initial: History = {}): HistoryHook => {
 
   // Clear history
   const clear = useCallback((user: string) => {
-    history.current[user] = undefined;
+    delete history.current[user];
   }, []);
 
 

@@ -47,7 +47,7 @@ export const parseBody = (req: NextApiRequest): Promise<Data> => (
  *
  * @param opts Options
  */
-export const parseData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap = 40, action = `say` }: Data): CowParsedData => ({
+export const parseData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap, action = `say` }: Data): CowParsedData => ({
   message: typeof message === `string` ? message : undefined,
   cow: typeof cow === `string` ? cow : `default`,
   mode:typeof mode === `string` ? mode : `u`,
@@ -57,6 +57,6 @@ export const parseData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, t
     (typeof wrap === `number`) ||
     (typeof wrap === `boolean`) ||
     (wrap === null) ||
-    (wrap === undefined) ? wrap : 40,
+    (wrap === undefined) ? wrap : false,
   action: action === `think` ? `think` : `say`
 });
