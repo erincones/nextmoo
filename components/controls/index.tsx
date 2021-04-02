@@ -81,6 +81,11 @@ export const Controls = (): JSX.Element => {
   }, [ dispatch ]);
 
   // No wrap change handler
+  const handleNoWrapClick = useCallback((value: boolean): void => {
+    dispatch({ type: `SET_NO_WRAP`, payload: !value });
+  }, [ dispatch ]);
+
+  // No wrap change handler
   const handleNoWrapChange = useCallback((value: boolean): void => {
     dispatch({ type: `SET_NO_WRAP`, payload: value });
   }, [ dispatch ]);
@@ -165,7 +170,7 @@ export const Controls = (): JSX.Element => {
             </legend>
             <div className="flex">
               <Spinbox value={wrap} min={0} disabled={noWrap} onChange={handleWrapChange} className="pr-2 w-5/12" />
-              <Checkbox id="no-wrap" checked={noWrap} onChange={handleNoWrapChange} className="pl-2 ml-4 w-7/12">
+              <Checkbox id="no-wrap" checked={noWrap} onClick={handleNoWrapClick} onChange={handleNoWrapChange} className="pl-2 ml-4 w-7/12">
                 No wrap
               </Checkbox>
             </div>
