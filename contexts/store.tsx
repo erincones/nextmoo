@@ -1,5 +1,6 @@
 import { createContext, useReducer, Dispatch, ReactNode } from "react";
 import { useRouter, NextRouter } from "next/router";
+import { searchParamsToUrlQuery } from "next/dist/next-server/lib/router/utils/querystring";
 
 import { modeFace, faceMode, CowModeData } from "cowsayjs/lib/mode";
 import { CowAction } from "cowsayjs/lib/box";
@@ -173,14 +174,21 @@ const reducer = (state: State, { type, payload, meta }: Action): State => {
  * @param param Cow parsed data
  * @returns Initial state
  */
-const initializer = ({ query }: NextRouter): State => {
+const initializer = ({ asPath }: NextRouter): State => {
+  // Default values
+  const { message: imsg, cow: f, action: a, mode: m, eyes: e, tongue: t, wrap: w } = initialState;
+
+  // Parse query string
+  const query = searchParamsToUrlQuery(new URLSearchParams(asPath.slice(1)));
   const data = parseData(query);
-  const { message, cow = `default`, action = `say` } = data;
-  let { mode = `u`, eyes = `oo`, tongue, wrap = 30 } = data;
+
+  const { message = imsg, cow = f, action = a } = data;
+  let { mode = m, eyes = e, tongue, wrap = w } = data;
+
 
   // Setup face and mode
   const face = modeFace(mode);
-  face.eyes = face.eyes || `oo`;
+  face.eyes = face.eyes || e;
 
   if ((eyes !== face.eyes) || (tongue !== face.tongue)) {
     mode = `c`;
@@ -196,23 +204,22 @@ const initializer = ({ query }: NextRouter): State => {
     case `string`: wrap = parseInt(wrap); break;
     default:
       noWrap = wrap !== true;
-      wrap = 30;
+      wrap = w;
   }
 
   // Invalid wrap
   if (isNaN(wrap)) {
-    wrap = 30;
+    wrap = w;
     noWrap = true;
   }
 
-
   // Return initial state
   return {
-    message: message || `moo!`,
-    cow: cow || `default`,
+    message,
+    cow,
     mode,
     eyes: eyes.slice(0, 2),
-    tongue: (tongue || ``).slice(0, 2),
+    tongue: (tongue || t).slice(0, 2),
     wrap,
     action,
     noWrap
