@@ -1,16 +1,20 @@
-import { useRef, useCallback, Dispatch, SetStateAction, ChangeEvent } from "react";
+import { useRef, useCallback, ChangeEvent } from "react";
+import { CheckableProps } from "./checkable";
 
 
 /**
- * Checkbox component properties
+ * Checkbox controlled component properties
  */
-interface CheckboxProps {
-  readonly children?: string;
-  readonly id?: string;
-  readonly checked: boolean;
-  readonly onChange: Dispatch<SetStateAction<boolean>>;
-  readonly className?: string;
+interface CheckboxControlledProps {
+  readonly checked?: boolean;
+  readonly onClick?: (value: boolean) => unknown;
+  readonly onChange?: (value: boolean) => unknown;
 }
+
+/**
+ * Checkbox controlled properties
+ */
+type CheckboxProps = CheckableProps & CheckboxControlledProps;
 
 
 /**
@@ -18,7 +22,7 @@ interface CheckboxProps {
  *
  * @param props Checkbox component properties
  */
-export const Checkbox = ({ children, id, checked, onChange, className }: CheckboxProps): JSX.Element => {
+export const Checkbox = ({ children, id, checked, onClick, onChange, className }: CheckboxProps): JSX.Element => {
   // Button
   const button = useRef<HTMLButtonElement>(null);
 
@@ -30,13 +34,13 @@ export const Checkbox = ({ children, id, checked, onChange, className }: Checkbo
 
   // Handle change
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    onChange(e.currentTarget.checked);
+    onChange?.(e.currentTarget.checked);
   }, [ onChange ]);
 
   // Handle click
   const handleClick = useCallback(() => {
-    onChange(value => !value);
-  }, [ onChange ]);
+    onClick?.(checked as boolean);
+  }, [ onClick, checked ]);
 
 
   // Return checkbox

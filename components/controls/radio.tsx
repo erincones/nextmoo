@@ -1,4 +1,5 @@
-import { useRef, useCallback, Dispatch, SetStateAction, InputHTMLAttributes } from "react";
+import { useRef, useCallback, InputHTMLAttributes } from "react";
+import { CheckableProps } from "./checkable";
 
 
 /**
@@ -8,20 +9,9 @@ type V = InputHTMLAttributes<HTMLInputElement>["value"];
 
 
 /**
- * Radio component base properties
- */
-interface RadioBaseProps {
-  readonly children?: string;
-  readonly id?: string;
-  readonly name?: string;
-  readonly checked?: boolean;
-  readonly className?: string;
-}
-
-/**
  * Radio component uncontrolled properties
  */
-interface RadioUncontrolledProps extends RadioBaseProps {
+interface RadioUncontrolledProps extends CheckableProps {
   readonly value?: undefined;
   readonly onChange?: undefined;
 }
@@ -29,9 +19,9 @@ interface RadioUncontrolledProps extends RadioBaseProps {
 /**
  * Radio component controlled properties
  */
-interface RadioControlledProps<T> extends RadioBaseProps {
+interface RadioControlledProps<T> extends CheckableProps {
   readonly value: T;
-  readonly onChange: Dispatch<SetStateAction<T>>;
+  readonly onChange: (value: T) => unknown;
 }
 
 /**
@@ -56,7 +46,7 @@ export const Radio = <T extends V>({ children, id, name, value, checked, onChang
   }, []);
 
   // Handle click and change
-  const handleClickChange = useCallback((): void => {
+  const handleChange = useCallback((): void => {
     onChange?.(value as T);
   }, [ onChange, value ]);
 
@@ -64,10 +54,10 @@ export const Radio = <T extends V>({ children, id, name, value, checked, onChang
   // Return radio
   return (
     <div className={className}>
-      <input id={id} type="radio" name={name} value={value} checked={checked} onChange={handleClickChange} className="hidden" />
+      <input id={id} type="radio" name={name} value={value} checked={checked} onChange={handleChange} className="hidden" />
       <label htmlFor={id} onClick={handleLabelClick}>
         <span className="cursor-pointer">
-          (<button ref={button} type="button" tabIndex={0} onClick={handleClickChange} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `*` : ` `}</button>)
+          (<button ref={button} type="button" tabIndex={0} onClick={handleChange} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `*` : ` `}</button>)
         </span>
         {children}
       </label>

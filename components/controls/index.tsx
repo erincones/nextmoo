@@ -1,35 +1,211 @@
-import { useState, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
-import { useRouter } from "next/router";
-
-import { CowAction } from "cowsayjs/lib/box";
-import { MooOptions } from "../../types";
+import { useReducer, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
+import { useRouter, NextRouter } from "next/router";
 
 import { corral } from "cowsayjs/cows";
-import { modes, modeFace, faceMode } from "cowsayjs/lib/mode";
-
+import { modes, modeFace, faceMode, CowModeData } from "cowsayjs/lib/mode";
+import { CowAction } from "cowsayjs/lib/box";
 
 import { Radio } from "./radio";
 import { Spinbox } from "./spinbox";
 import { Checkbox } from "./checkbox";
 
-import { parseOptions } from "../../utils/parse-options";
+import { parseData, CowParsedData } from "../../utils/parse";
 
 
 /**
  * Controls component properties
  */
 interface ControlsProps {
-  readonly onChange?: (data: MooOptions) => void;
+  readonly onChange?: (data: Required<CowParsedData>) => void;
 }
 
 
 /**
- * Clap string to the last two chars
- *
- * @param str String to clamp
+ * State
  */
-const clamp = (str: string, last = false) =>
-  str.length < 3 ? str : last ? str.slice(str.length - 2, str.length) : str.slice(0, 2);
+interface State extends Required<CowParsedData> {
+  readonly wrap: number;
+  readonly noWrap: boolean;
+}
+
+/**
+ * Base action
+ */
+interface BaseAction {
+  readonly type: string;
+  readonly payload?: unknown;
+  readonly meta?: unknown;
+  readonly error?: boolean;
+}
+
+/**
+ * String actions
+ */
+interface StringAction extends BaseAction {
+  readonly type: `SET_MESSAGE` | `SET_COW` | `SET_MODE` | `SET_ACTION`;
+  readonly payload: string;
+}
+
+/**
+ * Face actions
+ */
+interface FaceAction extends BaseAction {
+  readonly type: `SET_EYES` | `SET_TONGUE`;
+  readonly payload: string;
+  readonly meta: number | null;
+}
+
+/**
+ * Number action
+ */
+ interface NumberAction extends BaseAction {
+  readonly type: `SET_WRAP`;
+  readonly payload: number;
+}
+
+/**
+ * Boolean action
+ */
+interface BooleanAction extends BaseAction {
+  readonly type: `SET_NO_WRAP`;
+  readonly payload: boolean;
+}
+
+/**
+ * Action
+ */
+type Action = StringAction | FaceAction | NumberAction | BooleanAction;
+
+
+/**
+ * Controller reducer function
+ *
+ * @param state Current state
+ * @param action Action
+ * @returns New state
+ */
+const reducer = (state: State, { type, payload, meta }: Action): State => {
+  let eyes: string | undefined;
+  let tongue: string | undefined;
+
+  const spaces = /^\s*$/;
+  let prop: string;
+  let len: number;
+  let shift: boolean;
+  let mode: CowModeData;
+
+
+  // Apply
+  switch (type) {
+    // Simple assignations
+    case `SET_MESSAGE`: return { ...state, message: payload as string };
+    case `SET_COW`:     return { ...state, cow:     payload as string };
+    case `SET_WRAP`:    return { ...state, wrap:    payload as number };
+    case `SET_NO_WRAP`: return { ...state, noWrap:  payload as boolean };
+    case `SET_ACTION`:  return { ...state, action:  payload as CowAction };
+
+    // Mode
+    case `SET_MODE`:
+      ({ eyes, tongue } = modeFace(payload as string));
+      return {
+        ...state,
+        mode: payload as string,
+        eyes: (eyes || ``).padEnd(2),
+        tongue: (tongue || ``).padEnd(2)
+      };
+
+    // Face and mode
+    case `SET_EYES`:
+    case `SET_TONGUE`:
+      prop = payload as string;
+      len = prop.length;
+
+      // Clamp property
+      if (len > 2) {
+        shift = (typeof meta === `number`) && (meta > 2);
+        prop = shift ? prop.slice(len - 2, len) : prop.slice(0, 2);
+      }
+
+      // Select property and process
+      ({ eyes, tongue } = type === `SET_EYES` ?
+        { eyes: prop, tongue: state.tongue } :
+        { eyes: state.eyes, tongue: prop });
+
+
+      // Check mode
+      mode = faceMode({ eyes, tongue });
+      mode.eyes = mode.eyes || `oo`;
+      tongue = spaces.test(tongue) ? undefined : tongue;
+
+      if ((mode.eyes !== eyes) || (mode.tongue !== tongue)) {
+        mode.id = `c`;
+      }
+
+      // Update mode and face
+      return {
+        ...state,
+        mode: mode.id,
+        [type === `SET_EYES` ? `eyes` : `tongue`]: prop
+      };
+  }
+};
+
+
+/**
+ *
+ * @param param Cow parsed data
+ * @returns Initial state
+ */
+const initializer = (query: NextRouter["query"]): State => {
+  const data = parseData(query);
+  const { message, cow = `default`, action = `say` } = data;
+  let { mode = `u`, eyes = `oo`, tongue, wrap = 40 } = data;
+
+  // Setup face and mode
+  const face = modeFace(mode);
+  face.eyes = face.eyes || `oo`;
+
+  if ((eyes !== face.eyes) || (tongue !== face.tongue)) {
+    mode = `c`;
+    eyes = face.eyes !== undefined ? face.eyes : eyes;
+    tongue = face.tongue !== undefined ? face.tongue : tongue;
+  }
+
+  // Setup wrap
+  let noWrap = false;
+
+  switch (typeof wrap) {
+    case `number`: break;
+    case `string`: wrap = parseInt(wrap); break;
+    default: switch (wrap) {
+      case false:
+      case null: noWrap = true;
+
+      // eslint-disable-next-line no-fallthrough
+      default: wrap = 40;
+    }
+  }
+
+  // Invalid wrap
+  if (isNaN(wrap)) {
+    wrap = 40;
+    noWrap = true;
+  }
+
+
+  // Return initial state
+  return {
+    message: message || `moo!`,
+    cow: cow || `default`,
+    mode,
+    eyes: eyes.slice(0, 2),
+    tongue: (tongue || ``).slice(0, 2),
+    wrap,
+    action,
+    noWrap
+  };
+};
+
 
 
 /**
@@ -37,20 +213,13 @@ const clamp = (str: string, last = false) =>
  *
  * @param props Controls component properties
  */
-export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.Element => {
-  const router = useRouter();
-  const [ action, setAction ] = useState<CowAction>(`say`);
-  const [ cow, setCow ] = useState(`default`);
-  const [ mode, setMode ] = useState(`u`);
-  const [ eyes, setEyes ] = useState(`oo`);
-  const [ tongue, setTongue ] = useState(``);
-  const [ wrapColumn, setWrapColumn ] = useState(30);
-  const [ noWrap, setNoWrap ] = useState(false);
-  const [ message, setMessage ] = useState(``);
+export const Controls = ({ onChange }: ControlsProps): JSX.Element => {
+  const { query } = useRouter();
+  const [ { message, cow, mode, eyes, tongue, wrap, noWrap, action }, dispatch ] = useReducer(reducer, query, initializer);
 
 
-  // Cows options
-  const cowsOptions = useMemo(() =>
+  // Cow options
+  const cowOptions = useMemo(() =>
     corral.map(({ name }, i) => (
       <option key={i} value={name}>
         {`${name[0].toUpperCase()}${name.slice(1).replace(/[.-]/g, ` `)}`}
@@ -59,114 +228,76 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
   , []);
 
   // Modes options
-  const modesOptions = useMemo(() =>
-    [ <option key={-1} value="c" hidden>Custom</option> ].concat(modes.map(({ id, name }, i) => (
-      <option key={i} value={id}>
-        {`${name[0].toUpperCase()}${name.slice(1)}`}
-      </option>
-    )))
+  const modeOptions = useMemo(() =>
+    [
+      <option key={-1} value="c" hidden>Custom</option>,
+      ...modes.map(({ id, name }, i) => (
+        <option key={i} value={id}>
+          {`${name[0].toUpperCase()}${name.slice(1)}`}
+        </option>
+      ))
+    ]
   , []);
 
 
   // Submit handler
-  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
   }, []);
 
+  // Action change handler
+  const handleActionChange = useCallback((action: CowAction): void => {
+    dispatch({ type: `SET_ACTION`, payload: action });
+  }, []);
+
   // Cow change handler
-  const handleCowChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setCow(e.currentTarget.value);
+  const handleCowChange = useCallback((e: ChangeEvent<HTMLSelectElement>): void => {
+    dispatch({ type: `SET_COW`, payload: e.currentTarget.value });
   }, []);
 
   // Mode change handler
-  const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    setMode(e.currentTarget.value);
-
-    const face = modeFace(e.currentTarget.value);
-    setEyes(face.eyes || ``);
-    setTongue(face.tongue || ``);
+  const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>): void => {
+    dispatch({ type: `SET_MODE`, payload: e.currentTarget.value });
   }, []);
 
   // Tongue change handler
-  const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>): void => {
     const { value, selectionStart } = e.currentTarget;
-    const eyes = clamp(value, selectionStart !== null ? selectionStart > 2 : false);
-    const mode = faceMode({ eyes, tongue });
-
-    setEyes(eyes);
-    setMode((mode.eyes === eyes) && (mode.tongue) === tongue ? mode.id : `c`);
-  }, [ tongue ]);
+    dispatch({ type: `SET_EYES`, payload: value, meta: selectionStart });
+  }, []);
 
   // Tongue change handler
-  const handleTongueChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const handleTongueChange = useCallback((e: ChangeEvent<HTMLInputElement>): void => {
     const { value, selectionStart } = e.currentTarget;
-    const tongue = clamp(value, selectionStart !== null ? selectionStart > 2 : false);
-    const mode = faceMode({ eyes, tongue });
+    dispatch({ type: `SET_TONGUE`, payload: value, meta: selectionStart });
+  }, []);
 
-    setTongue(tongue);
-    setMode((mode.eyes === eyes) && (mode.tongue) === tongue ? mode.id : `c`);
-  }, [ eyes ]);
+  // Wrap change handler
+  const handleWrapChange = useCallback((value: number): void => {
+    dispatch({ type: `SET_WRAP`, payload: value });
+  }, []);
+
+  // No wrap change handler
+  const handleNoWrapChange = useCallback((value: boolean): void => {
+    dispatch({ type: `SET_NO_WRAP`, payload: value });
+  }, []);
 
   // Message change handler
-  const handleMessageChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.currentTarget.value);
+  const handleMessageChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>): void => {
+    dispatch({ type: `SET_MESSAGE`, payload: e.currentTarget.value });
   }, []);
 
 
-  // Initialize values from query string
-  useEffect(() => {
-    // Parse query string options
-    const { message, options } = parseOptions(router.query);
-    const opts = options || {};
-
-    // Set given values
-    setMessage(message === undefined ? `moo!` : message);
-
-    if (opts.action === `think`) {
-      setAction(`think`);
-    }
-
-    if (corral.some(({ name }) => name === opts.cow)) {
-      setCow(opts.cow || `default`);
-    }
-
-    if (opts.wrap !== undefined) {
-      if ((opts.wrap === false) || (opts.wrap === null)) {
-        setNoWrap(true);
-      }
-      else {
-        const wrap = typeof opts.wrap === `string` ? parseInt(opts.wrap) : opts.wrap;
-        const column = wrap === true || isNaN(wrap) ? 40 : wrap;
-        setWrapColumn(column < 0 ? 0 : column);
-      }
-    }
-
-    if ((opts.eyes !== undefined) || (opts.tongue !== undefined)) {
-      const eyes = opts.eyes === undefined ? `oo` : opts.eyes.slice(0, 2);
-      const tongue = opts.tongue === undefined ? `` : opts.tongue.slice(0, 2);
-      const mode = faceMode({ eyes, tongue });
-
-      setMode((mode.eyes === eyes) && (mode.tongue) === tongue ? mode.id : `c`);
-      setEyes(eyes);
-      setTongue(tongue);
-    }
-    else if (modes.some(({ id }) => id === opts.mode)) {
-      const { eyes, tongue } = modeFace(opts.mode);
-
-      setMode(opts.mode || `d`);
-      setEyes(eyes || `oo`);
-      setTongue(tongue || ``);
-    }
-
-
-    // Focus message
+  // Focus the message text area
+  useEffect((): void => {
     document.getElementById(`message`)?.focus();
-  }, [ router ]);
+  }, []);
+
 
   // Update cow
-  useEffect(() => {
-    onChange({ message, options: { action, cow, eyes, tongue, wrap: noWrap ? false : wrapColumn } });
-  }, [ message, action, cow, eyes, tongue, wrapColumn, noWrap, onChange ]);
+  useEffect((): void => {
+    onChange?.({ message, action, mode: `u`, cow, eyes, tongue, wrap: noWrap ? false : wrap });
+  }, [ message, cow, eyes, tongue, wrap, noWrap, action, onChange ]);
 
 
   // Return controls component
@@ -181,7 +312,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
               <label htmlFor="cow">Cow</label>
             </legend>
             <select id="cow" value={cow} title={cow} onChange={handleCowChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none pr-3 w-full">
-              {cowsOptions}
+              {cowOptions}
             </select>
           </fieldset>
 
@@ -189,10 +320,10 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
           <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
             <legend className="cursor-default px-1">Action</legend>
             <div className="flex">
-              <Radio name="action" id="say" value={`say` as CowAction} checked={action === `say`} onChange={setAction} className="w-3/7">
+              <Radio name="action" id="say" value="say" checked={action === `say`} onChange={handleActionChange} className="w-3/7">
                 Say
               </Radio>
-              <Radio name="action" id="think" value={`think` as CowAction} checked={action === `think`} onChange={setAction} className="pl-2 w-4/7">
+              <Radio name="action" id="think" value="think" checked={action === `think`} onChange={handleActionChange} className="pl-2 w-4/7">
                 Think
               </Radio>
             </div>
@@ -206,7 +337,7 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
               <label htmlFor="mode">Mode</label>
             </legend>
             <select id="mode" value={mode} title={mode} onChange={handleModeChange} className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none pr-3 w-full">
-              {modesOptions}
+              {modeOptions}
             </select>
           </fieldset>
 
@@ -236,8 +367,8 @@ export const Controls = ({ onChange = () => { return; } }: ControlsProps): JSX.E
               <label htmlFor="wrap-col">Wrap column</label>
             </legend>
             <div className="flex">
-              <Spinbox value={wrapColumn} min={0} disabled={noWrap} onChange={setWrapColumn} className="pr-2 w-5/12" />
-              <Checkbox id="no-wrap" checked={noWrap} onChange={setNoWrap} className="pl-2 ml-4 w-7/12">
+              <Spinbox value={wrap} min={0} disabled={noWrap} onChange={handleWrapChange} className="pr-2 w-5/12" />
+              <Checkbox id="no-wrap" checked={noWrap} onChange={handleNoWrapChange} className="pl-2 ml-4 w-7/12">
                 No wrap
               </Checkbox>
             </div>

@@ -1,4 +1,4 @@
-import { useState, useCallback, Dispatch, SetStateAction, ChangeEvent, WheelEvent, useEffect } from "react";
+import { useState, useCallback, ChangeEvent, WheelEvent, useEffect } from "react";
 
 
 /**
@@ -10,7 +10,7 @@ interface SpinboxProps {
   readonly max?: number;
   readonly step?: number;
   readonly disabled?: boolean;
-  readonly onChange?: Dispatch<SetStateAction<number>>;
+  readonly onChange?: (value: number) => unknown;
   readonly className?: string;
 }
 

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { MooOptions } from "../../types";
+import { CowParsedData } from "../../utils/parse";
 
 import { faceMode } from "cowsayjs/lib/mode";
 import { line, url } from "./utils";
@@ -10,7 +10,7 @@ import { line, url } from "./utils";
  * Share props
  */
 interface ShareProps {
-  readonly data: MooOptions;
+  readonly data: CowParsedData;
 }
 
 /**
@@ -27,25 +27,22 @@ const api = `${url}/api`;
 export const Share = ({ data }: ShareProps): JSX.Element => {
   // Parsed data
   const { web, get, json } = useMemo(() => {
-    // Purge data
-    const opt = data.options || {};
-
-    const face = faceMode({ eyes: opt.eyes, tongue: opt.tongue });
+    const face = faceMode({ eyes: data.eyes, tongue: data.tongue });
     const mode = face.id !== `u` ? face.id : undefined;
     const custom = mode === `c`;
 
     const options = {
-      cow: opt.cow !== `default` ? opt.cow : undefined,
-      action: opt.action === `think` ? `think` : undefined,
+      cow: data.cow !== `default` ? data.cow : undefined,
       mode: custom ? mode : undefined,
-      eyes: custom && (opt.eyes !== `oo`) ? opt.eyes : undefined,
-      tongue: custom && opt.tongue ? opt.tongue : undefined,
-      wrap: `${opt.wrap}` !== "40" ? opt.wrap : undefined
+      eyes: custom && (data.eyes !== `oo`) ? data.eyes : undefined,
+      tongue: custom && data.tongue ? data.tongue : undefined,
+      wrap: `${data.wrap}` !== `40` ? data.wrap : undefined,
+      action: data.action === `think` ? `think` : undefined
     };
 
     // Build query string
     const message = data.message ? data.message : undefined;
-    const wrap = `wrap=${encodeURIComponent(opt.wrap !== false && opt.wrap !== null && opt.wrap !== undefined ? opt.wrap : ``)}`;
+    const wrap = `wrap=${encodeURIComponent(data.wrap !== false && data.wrap !== null && data.wrap !== undefined ? data.wrap : ``)}`;
 
     const query = Object.entries({ message, ...options, wrap: undefined })
       .reduce<string[]>((query, [ key, value ]) =>
@@ -56,8 +53,8 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
 
     // Append wrap parameter
     const sep = query.length > 0 ? `&` : ``;
-    const webParams = `${query}${opt.wrap !== 30 ? `${sep}${wrap}` : ``}`;
-    const getParams = `${query}${opt.wrap !== 40 ? `${sep}${wrap}` : ``}`;
+    const webParams = `${query}${data.wrap !== 30 ? `${sep}${wrap}` : ``}`;
+    const getParams = `${query}${data.wrap !== 40 ? `${sep}${wrap}` : ``}`;
 
     // JSON POST
     const post = { message, ...options };

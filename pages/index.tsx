@@ -4,19 +4,19 @@ import { SEO } from "../components/seo";
 import { Controls } from "../components/controls";
 import { Terminal } from "../components/terminal";
 
-import { MooOptions } from "../types";
+import { CowParsedData } from "../utils/parse";
 
 
 /**
  * Home component
  */
 const Home = (): JSX.Element => {
-  const [ mooData, setMooData ] = useState<MooOptions>({});
+  const [ data, setData ] = useState<Required<CowParsedData>>({ eyes: ``, tongue: `` } as never);
 
 
   // Data change handler
-  const handleDataChange = useCallback((data: MooOptions) => {
-    setMooData(data);
+  const handleDataChange = useCallback((data: Required<CowParsedData>) => {
+    setData(data);
   }, []);
 
 
@@ -27,7 +27,7 @@ const Home = (): JSX.Element => {
 
       <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
         <Controls onChange={handleDataChange} />
-        <Terminal data={mooData} />
+        <Terminal data={data} />
       </div>
     </>
   );

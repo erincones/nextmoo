@@ -1,6 +1,6 @@
-import { useRef, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
+import { useRef, useState, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode, useMemo } from "react";
 
-import { MooOptions } from "../../types";
+import { CowParsedData } from "../../utils/parse";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
@@ -19,7 +19,7 @@ import { moo } from "cowsayjs";
  * Terminal component properties
  */
 interface TerminalProps {
-  readonly data: MooOptions;
+  readonly data: Required<CowParsedData>;
 }
 
 
@@ -36,6 +36,13 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
   const [ output, setOutput ] = useState<ReactNode[]>([]);
   const history = useHistory({ [user.current]: { stack: [ `help` ], current: 1 } });
 
+
+  // Cow message and options
+  const { message, ...options } = useMemo(() => ({
+    ...data,
+    eyes: data.eyes.padEnd(2),
+    tongue: data.tongue.padEnd(2)
+  }), [ data ]);
 
   // Execute command
   const execCommand = useCallback((input: string, key: number) => {
@@ -202,7 +209,7 @@ export const Terminal = ({ data }: TerminalProps): JSX.Element => {
     <div className="flex flex-col flex-grow cursor-text px-px w-full md:w-7/12">
       {/* Cow */}
       <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
-        {moo(data.message, data.options)}
+        {moo(message, options)}
       </pre>
 
       {/* Terminal */}
