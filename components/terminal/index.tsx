@@ -315,14 +315,18 @@ export const Terminal = (): JSX.Element => {
     // First render
     if (first.current.input) {
       const io = terminal.current as HTMLDivElement;
+      const ps1 = prompt.current as HTMLPreElement;
       const input = textArea.current as HTMLTextAreaElement;
       first.current.input = false;
 
       // Fit height
       if (io.clientHeight < io.scrollHeight) {
-        const lineHeight = (prompt.current as HTMLPreElement).clientHeight;
+        const lineHeight = ps1.clientHeight;
         input.style.height = `${lineHeight}px`;
       }
+
+      // Force initial pad
+      input.value = ` `.repeat(ps1.innerText.length);
     }
 
     // Other renders
