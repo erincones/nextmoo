@@ -244,11 +244,13 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
 
   // Get options from query string
   useNextEffect(() => {
-    const query = location.search.slice(1);
-    first.current = false;
+    if (first.current) {
+      const query = location.search.slice(1);
+      first.current = false;
 
-    if (query.length !== 0) {
-      dispatch({ type: `SET_DATA`, data: parse(query) });
+      if (query.length !== 0) {
+        dispatch({ type: `SET_DATA`, data: parse(query) });
+      }
     }
   }, []);
 
@@ -257,7 +259,8 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
     if (!first.current) {
       const data = purgeCowData(cowData, 30);
 
-      if (data.message === `moo!`) delete data.message;
+      if (data.message?.length === 0) data.message = ``;
+      else if (data.message === `moo!`) delete data.message;
 
       history.replaceState(``, ``, `${location.origin}/${stringifyCowData(data)}`);
     }
