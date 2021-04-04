@@ -1,4 +1,4 @@
-import { useRef, useReducer, useContext, useMemo, useCallback, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
+import { useRef, useContext, useReducer, useMemo, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
 
 import { moo } from "cowsayjs";
 import { CowContext, CowData } from "../../contexts/cow";
@@ -57,7 +57,7 @@ type Action = ScrollHistoryAction | HandleCommandAction | ExecCommandAction;
 /**
  * Initial environment
  */
-const initialEnv: Environment = {
+const initial: Environment = {
   user: `user`,
   index: 0,
   history: { user: [ [ `` ], [ `` ] ] },
@@ -112,6 +112,7 @@ const handleCommand = (env: Environment, { command, cowData, run = false }: Hand
  */
 const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environment => {
   // Parse input
+  const fullHistory = { ...env.history };
   const [ workspace, history ] = env.history[env.user].map(list => [ ...list ]);
   const input = workspace[env.index].split(/\r\n|[\n\r\f\v\u2028\u2029\u0085]/g);
   const output = [ ...env.output ];
@@ -122,7 +123,7 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
   input.forEach(command => {
     // Parse command
     let match = command.trimLeft().match(/^\s*(\S+)(?:\s+(.+))?\s*$/);
-    let key = output.length -1;
+    let key = output.length;
     output.push(<Prompt key={key++} user={user} path="moo" className={line}>{command}</Prompt>);
 
     if (match === null) {
@@ -154,9 +155,9 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
 
     switch (bin) {
       // Simple commands
-      case `exit`:  user = initialEnv.user; return;
+      case `exit`:  user = initial.user; return;
       case `clear`: output.splice(0, output.length); return;
-      case `echo`:  output.push(<pre key={key}>{/\S/.test(args) ? args.trim() : `\n`}</pre>); return;
+      case `echo`:  output.push(<pre key={key} className={line}>{/\S/.test(args) ? args.trim() : `\n`}</pre>); return;
       case `help`:  output.push(<Help key={key} />); return;
       case `ls`:    output.push(<Ls key={key} />); return;
       case `share`: output.push(<Share key={key} data={cowData} />); return;
@@ -175,7 +176,11 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
 
       // Super user
       case `su`:
-        if (sudo) user = `root`;
+        if (sudo) {
+          user = `root`;
+
+          if (!(user in fullHistory)) fullHistory[user] = [ [ `` ], [ `` ] ];
+        }
         else output.push(<Bad key={key} shell="nextmoo" command={bin} message="Permission denied" />);
         return;
 
@@ -185,19 +190,19 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
   });
 
 
-  // Update workspace
+  // Update history and workspace
+  fullHistory[env.user] = [ workspace, history ];
+
   if (env.index < (workspace.length - 1)) {
     workspace.splice(env.index, 1, history[env.index]);
   }
 
+
   // Updated environment
   return {
     user,
-    index: workspace.length - 1,
-    history: {
-      ...env.history,
-      [env.user]: [ workspace, history ]
-    },
+    index: fullHistory[user][0].length - 1,
+    history: fullHistory,
     output
   };
 };
@@ -235,12 +240,13 @@ const initializer = (env: Environment): Environment => {
  * @param props Terminal component properties
  */
 export const Terminal = (): JSX.Element => {
+  const first = useRef({ input: true, output: true });
   const terminal = useRef<HTMLDivElement>(null);
   const prompt = useRef<HTMLPreElement>(null);
   const textArea = useRef<HTMLTextAreaElement>(null);
 
-  const [ { user, output, index, history }, dispatch ] = useReducer(reducer, initialEnv, initializer);
   const [ cowData ] = useContext(CowContext);
+  const [ { user, output, index, history }, dispatch ] = useReducer(reducer, initial, initializer);
 
 
   // Terminal output
@@ -256,6 +262,13 @@ export const Terminal = (): JSX.Element => {
     noWrap: undefined
   }), [ cowData ]);
 
+
+  // Scroll to bottom
+  const scrollBottom = useCallback(() => {
+    const container = terminal.current as HTMLDivElement;
+    container.scrollTop = container.scrollHeight;
+  }, []);
+
   // Change Handler
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     const padding = (prompt.current as HTMLPreElement).innerText.length;
@@ -264,8 +277,6 @@ export const Terminal = (): JSX.Element => {
 
   // Key down handler
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
-    const container = terminal.current as HTMLDivElement;
-
     switch (e.key) {
       case `ArrowUp`:
         e.preventDefault();
@@ -279,7 +290,6 @@ export const Terminal = (): JSX.Element => {
 
       case `Enter`:
         e.preventDefault();
-        container.scrollTop = container.scrollHeight;
         dispatch({ type: `EXEC_COMMAND`, cowData });
     }
   }, [ cowData ]);
@@ -288,10 +298,64 @@ export const Terminal = (): JSX.Element => {
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
     const padding = (prompt.current as HTMLPreElement).innerText.length;
 
+    // Fix selection start
     if (e.currentTarget.selectionStart < padding) {
       e.currentTarget.selectionStart = padding;
     }
-  }, []);
+
+    // Scroll to bottom if is in the end
+    if ((e.currentTarget.value.length > padding) && (e.currentTarget.value.length === e.currentTarget.selectionStart)) {
+      scrollBottom();
+    }
+  }, [ scrollBottom ]);
+
+
+  // Fix input height
+  useEffect(() => {
+    // First render
+    if (first.current.input) {
+      const io = terminal.current as HTMLDivElement;
+      const input = textArea.current as HTMLTextAreaElement;
+      first.current.input = false;
+
+      // Fit height
+      if (io.clientHeight < io.scrollHeight) {
+        const lineHeight = (prompt.current as HTMLPreElement).clientHeight;
+        input.style.height = `${lineHeight}px`;
+      }
+    }
+
+    // Other renders
+    else {
+      const io = terminal.current as HTMLDivElement;
+      const input = textArea.current as HTMLTextAreaElement;
+
+      // Container overflow
+      if (io.clientHeight < io.scrollHeight) {
+        const ps1 = prompt.current as HTMLPreElement;
+
+        // Shrink
+        if (command.length <= ps1.innerText.length) {
+          input.style.height = `${ps1.clientHeight}px`;
+        }
+
+        // Grow
+        else {
+          const height = Math.ceil(input.scrollHeight / ps1.clientHeight) * ps1.clientHeight;
+          input.style.height = `${height}px`;
+        }
+      }
+
+      // Release
+      else input.style.height = ``;
+    }
+  }, [ command, cowData.message, cowData.cow, cowData.wrap, cowData.noWrap ]);
+
+  // Scroll to bottom when output changes
+  useEffect(() => {
+    if (first.current.output) first.current.output = false;
+    else scrollBottom();
+  }, [ scrollBottom, output.length ]);
 
 
   // Return terminal component

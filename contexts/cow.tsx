@@ -1,5 +1,7 @@
-import { createContext, useReducer, useState, useEffect, Dispatch, ReactNode } from "react";
+import { createContext, useRef, useReducer, useEffect, Dispatch, ReactNode } from "react";
 import { parse } from "querystring";
+
+import { useNextEffect } from "../hooks/effect";
 
 import { modeFace, faceMode, CowFace } from "cowsayjs/lib/mode";
 import { CowAction } from "cowsayjs/lib/box";
@@ -236,22 +238,30 @@ export const CowContext = createContext<[ CowData, Dispatch<Action> ]>([ initial
  * @param props Cow provider properties
  */
 export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
+  const first = useRef(true);
   const [ cowData, dispatch ] = useReducer(reducer, initial);
-  const [ effect, setEffect ] = useState<`get` | `set`>(`get`);
 
 
-  // Get options from query string and update query string
-  useEffect(() => {
-    if (typeof window !== `undefined`) {
-      if (effect === `get`) {
-        dispatch({ type: `SET_DATA`, data: parse(location.search.slice(1)) });
-        setEffect(`set`);
-      }
-      else if (history.replaceState !== undefined) {
-        history.replaceState(``, ``, `${location.origin}/${stringifyCowData(purgeCowData(cowData, 30))}`);
-      }
+  // Get options from query string
+  useNextEffect(() => {
+    const query = location.search.slice(1);
+    first.current = false;
+
+    if (query.length !== 0) {
+      dispatch({ type: `SET_DATA`, data: parse(query) });
     }
-  }, [ effect, cowData ]);
+  }, []);
+
+  // Update query string
+  useEffect(() => {
+    if (!first.current) {
+      const data = purgeCowData(cowData, 30);
+
+      if (data.message === `moo!`) delete data.message;
+
+      history.replaceState(``, ``, `${location.origin}/${stringifyCowData(data)}`);
+    }
+  }, [ cowData ]);
 
 
   // Return the cow provider

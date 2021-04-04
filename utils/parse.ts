@@ -74,8 +74,8 @@ export const normalizeCowData = ({ message, cow = `default`, mode = `u`, eyes = 
 export const purgeCowData = ({ message, cow, mode, eyes, tongue, wrap, action, noWrap }: CowData, defWrap = 40): CowParsedData => {
   const data: CowParsedData = {};
 
-  if (message !== `moo!`) data.message = message;
-  if (cow !== `default`)  data.cow = cow;
+  if (message.length !== 0) data.message = message;
+  if (cow !== `default`)    data.cow = cow;
 
   if ((mode !== `c`) && (mode !== `u`)) data.mode = mode;
   else {
