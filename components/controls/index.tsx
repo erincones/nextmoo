@@ -1,4 +1,4 @@
-import { useContext, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
+import { useContext, useMemo, useCallback, ChangeEvent, FormEvent } from "react";
 
 import { CowContext } from "../../contexts/cow";
 
@@ -96,12 +96,6 @@ export const Controls = (): JSX.Element => {
   }, [ dispatch ]);
 
 
-  // Focus the message text area
-  useEffect((): void => {
-    document.getElementById(`message`)?.focus();
-  }, []);
-
-
   // Return controls component
   return (
     <form noValidate onSubmit={handleSubmit} className="flex flex-col p-2 w-full md:w-5/12 min-h-full">
@@ -184,7 +178,7 @@ export const Controls = (): JSX.Element => {
           <legend className="cursor-default px-1">
             <label htmlFor="message">Message</label>
           </legend>
-          <textarea id="message" value={message} rows={1} autoCapitalize="none" spellCheck={false} autoFocus onChange={handleMessageChange} className="bg-black text-white focus:outline-none w-full min-h-20 md:min-h-full resize-y md:resize-none" />
+          <textarea value={message} rows={1} autoCapitalize="none" spellCheck={false} autoFocus onChange={handleMessageChange} className="bg-black text-white focus:outline-none w-full min-h-20 md:min-h-full resize-y md:resize-none" />
         </fieldset>
       </div>
     </form>
