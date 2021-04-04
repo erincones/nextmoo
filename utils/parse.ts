@@ -1,12 +1,15 @@
 import { NextApiRequest } from "next";
 import { CowFullOptions } from "cowsayjs";
+import { stringify } from "querystring";
+
+import { CowData } from "../contexts/cow";
 
 
 /**
  * Data
  */
 export interface Data {
-  readonly [key: string]: unknown;
+  [key: string]: unknown;
 }
 
 /**
@@ -22,8 +25,8 @@ export interface CowParsedData extends CowFullOptions {
  *
  * @param req Request
  */
-export const parseBody = (req: NextApiRequest): Promise<Data> => (
-  new Promise<Data>(resolve => {
+export const parseBody = (req: NextApiRequest): Promise<Readonly<Data>> => (
+  new Promise<Readonly<Data>>(resolve => {
     // Data stream
     req.body = [];
 
@@ -47,7 +50,7 @@ export const parseBody = (req: NextApiRequest): Promise<Data> => (
  *
  * @param opts Options
  */
-export const parseData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap, action = `say` }: Data): CowParsedData => ({
+export const normalizeCowData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap, action = `say` }: Data): CowParsedData => ({
   message: typeof message === `string` ? message : undefined,
   cow: typeof cow === `string` ? cow : `default`,
   mode:typeof mode === `string` ? mode : `u`,
@@ -60,3 +63,49 @@ export const parseData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, t
     (wrap === undefined) ? wrap : false,
   action: action === `think` ? `think` : `say`
 });
+
+
+/**
+ * Remove default cow values
+ *
+ * @param cowData Cow data
+ * @param defWrap Default wrap
+ */
+export const purgeCowData = ({ message, cow, mode, eyes, tongue, wrap, action, noWrap }: CowData, defWrap = 40): CowParsedData => {
+  const data: CowParsedData = {};
+
+  if (message !== `moo!`) data.message = message;
+  if (cow !== `default`)  data.cow = cow;
+
+  if ((mode !== `c`) && (mode !== `u`)) data.mode = mode;
+  else {
+    if ((eyes.length !== 0) && (eyes !== `oo`)) data.eyes = eyes.padEnd(2);
+    if (tongue.length !== 0) data.tongue = tongue.padEnd(2);
+  }
+
+  if (noWrap) data.wrap = ``;
+  else if (wrap !== defWrap) data.wrap = wrap;
+
+  if (action !== `say`) data.action = action;
+
+  return data;
+};
+
+/**
+ * Parse cow data object to query string
+ *
+ * @param data Cow data
+ */
+export const stringifyCowData = (cow: CowParsedData, browser = true): string => {
+  // Stringify
+  const query = stringify(cow as never);
+
+  if (query.length === 0) {
+    return ``;
+  }
+
+  // Adjust
+  return browser ?
+    `?${query}`.replaceAll(`%20`, `+`).replaceAll(`.`, `%2E`) :
+    `?${query}`;
+};

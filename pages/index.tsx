@@ -11,10 +11,10 @@ import { Terminal } from "../components/terminal";
 const Home = (): JSX.Element => {
   return (
     <>
-      <SEO title="NextMoo!" />
+      <SEO title="Next Moo!" />
 
       <CowProvider>
-        <div className="flex flex-col md:flex-row-reverse min-h-screen md:max-h-screen">
+        <div className="flex flex-col md:flex-row-reverse md:overflow-hidden min-h-screen md:max-h-screen w-full h-full">
           <Controls/>
           <Terminal/>
         </div>

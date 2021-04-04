@@ -1,7 +1,11 @@
 const { fontFamily } = require(`tailwindcss/defaultTheme`);
 const terminal = require(`./tailwind-plugins/terminal`);
 
-
+/**
+ * Tailwind configuration
+ *
+ * @type {import("tailwindcss/tailwind-config").TailwindConfig}
+ */
 module.exports = {
   purge: {
     mode: `all`,

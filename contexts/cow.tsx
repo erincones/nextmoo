@@ -1,10 +1,19 @@
-import { createContext, useReducer, Dispatch, ReactNode } from "react";
+import { createContext, useReducer, useState, useEffect, Dispatch, ReactNode } from "react";
 import { parse } from "querystring";
 
 import { modeFace, faceMode, CowFace } from "cowsayjs/lib/mode";
 import { CowAction } from "cowsayjs/lib/box";
 
-import { parseData, Data, CowParsedData } from "../utils/parse";
+import { normalizeCowData, purgeCowData, stringifyCowData, Data, CowParsedData } from "../utils/parse";
+
+
+/**
+ * State
+ */
+export interface CowData extends Required<CowParsedData> {
+  readonly wrap: number;
+  readonly noWrap: boolean;
+}
 
 
 /**
@@ -12,15 +21,6 @@ import { parseData, Data, CowParsedData } from "../utils/parse";
  */
 interface CowProviderProps {
   readonly children: ReactNode;
-}
-
-
-/**
- * State
- */
- interface CowOptions extends Required<CowParsedData> {
-  readonly wrap: number;
-  readonly noWrap: boolean;
 }
 
 
@@ -74,20 +74,20 @@ interface NoWrapAction {
   readonly noWrap: boolean;
 }
 
-/** Options action */
-interface OptionsAction {
-  readonly type: `SET_OPTIONS`;
-  readonly options: Data;
+/** Data action */
+interface DataAction {
+  readonly type: `SET_DATA`;
+  readonly data: Readonly<Data>;
 }
 
 /** Action */
-type Action = MessageAction | CowNameAction | ModeAction | EyesAction | TongueAction | WrapAction | ActionAction | NoWrapAction | OptionsAction;
+type Action = MessageAction | CowNameAction | ModeAction | EyesAction | TongueAction | WrapAction | ActionAction | NoWrapAction | DataAction;
 
 
 /**
  * Initial cow
  */
-const initial: CowOptions = {
+const initial: CowData = {
   message: `moo!`,
   cow: `default`,
   mode: `u`,
@@ -105,7 +105,7 @@ const initial: CowOptions = {
  * @param cow Current cow
  * @param mode Cow mode
  */
-const setMode = (cow: CowOptions, mode: string): CowOptions => {
+const setMode = (cow: CowData, mode: string): CowData => {
   const { eyes, tongue } = modeFace(mode);
 
   return {
@@ -122,7 +122,7 @@ const setMode = (cow: CowOptions, mode: string): CowOptions => {
  * @param cow Current cow
  * @param face Face data
  */
-const setFace = (cow: CowOptions, { type, cursor, ...data }: EyesAction | TongueAction): CowOptions => {
+const setFace = (cow: CowData, { type, cursor, ...data }: EyesAction | TongueAction): CowData => {
   // Select property
   const { eyes = cow.eyes, tongue = cow.tongue } = data as Required<CowFace>;
   let prop = type === `SET_EYES` ? eyes : tongue;
@@ -151,15 +151,15 @@ const setFace = (cow: CowOptions, { type, cursor, ...data }: EyesAction | Tongue
 };
 
 /**
- * Set the given options to the cow
+ * Set the given data to the cow
  *
- * @param opts Cow options data
+ * @param data Cow data data
  */
-const setOptions = (data: Data): CowOptions => {
+const setData = (data: Readonly<Data>): CowData => {
   // Parse query string
-  const options = parseData(data);
-  const { message = initial.message, cow = initial.cow, action } = options;
-  let { mode = initial.mode, eyes = initial.eyes, tongue, wrap } = options;
+  const cowData = normalizeCowData(data);
+  const { message = initial.message, cow = initial.cow, action } = cowData;
+  let { mode = initial.mode, eyes = initial.eyes, tongue, wrap } = cowData;
 
 
   // Setup face and mode
@@ -179,7 +179,7 @@ const setOptions = (data: Data): CowOptions => {
     case `number`: break;
     case `string`: wrap = parseInt(wrap); break;
     default:
-      noWrap = wrap !== true;
+      noWrap = wrap === true;
       wrap = initial.wrap;
   }
 
@@ -206,41 +206,29 @@ const setOptions = (data: Data): CowOptions => {
 /**
  * Cow reducer function
  *
- * @param state Current cow options
+ * @param state Current cow data
  * @param action Action
  * @returns New cow
  */
-const reducer = (state: CowOptions, action: Action): CowOptions => {
-  // Apply
+const reducer = (state: CowData, action: Action): CowData => {
   switch (action.type) {
-    case `SET_MESSAGE`: return { ...state, message: action.message };
-    case `SET_COW`:     return { ...state, cow:     action.cow };
-    case `SET_WRAP`:    return { ...state, wrap:    action.wrap };
-    case `SET_NO_WRAP`: return { ...state, noWrap:  action.noWrap };
-    case `SET_ACTION`:  return { ...state, action:  action.action };
-    case `SET_MODE`:    return setMode(state, action.mode);
-    case `SET_EYES`:    return setFace(state, action);
-    case `SET_TONGUE`:  return setFace(state, action);
-    case `SET_OPTIONS`: return setOptions(action.options);
+    case `SET_MESSAGE`: return action.message !== state.message ? { ...state, message: action.message } : state;
+    case `SET_COW`:     return action.cow     !== state.cow     ? { ...state, cow:     action.cow }     : state;
+    case `SET_WRAP`:    return action.wrap    !== state.wrap    ? { ...state, wrap:    action.wrap }    : state;
+    case `SET_NO_WRAP`: return action.noWrap  !== state.noWrap  ? { ...state, noWrap:  action.noWrap }  : state;
+    case `SET_ACTION`:  return action.action  !== state.action  ? { ...state, action:  action.action }  : state;
+    case `SET_MODE`:    return action.mode    !== state.mode    ? setMode(state, action.mode) : state;
+    case `SET_EYES`:    return action.eyes    !== state.eyes    ? setFace(state, action) : state;
+    case `SET_TONGUE`:  return action.tongue  !== state.tongue  ? setFace(state, action) : state;
+    case `SET_DATA`:    return setData(action.data);
   }
-};
-
-/**
- * Initialize the cow options with the givin data
- */
-const initializer = (): CowOptions => {
-  const data = typeof window !== `undefined` ?
-    parse(window.location.search.slice(1)) :
-    {};
-
-  return setOptions(data);
 };
 
 
 /**
  * Cow context
  */
-export const CowContext = createContext<[ CowOptions, Dispatch<Action> ]>([ initial, () => { return; } ]);
+export const CowContext = createContext<[ CowData, Dispatch<Action> ]>([ initial, () => { return; } ]);
 
 /**
  * Cow provider
@@ -248,11 +236,27 @@ export const CowContext = createContext<[ CowOptions, Dispatch<Action> ]>([ init
  * @param props Cow provider properties
  */
 export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
-  const [ cowOptions, dispatch ] = useReducer(reducer, undefined, initializer);
+  const [ cowData, dispatch ] = useReducer(reducer, initial);
+  const [ effect, setEffect ] = useState<`get` | `set`>(`get`);
+
+
+  // Get options from query string and update query string
+  useEffect(() => {
+    if (typeof window !== `undefined`) {
+      if (effect === `get`) {
+        dispatch({ type: `SET_DATA`, data: parse(location.search.slice(1)) });
+        setEffect(`set`);
+      }
+      else if (history.replaceState !== undefined) {
+        history.replaceState(``, ``, `${location.origin}/${stringifyCowData(purgeCowData(cowData, 30))}`);
+      }
+    }
+  }, [ effect, cowData ]);
+
 
   // Return the cow provider
   return (
-    <CowContext.Provider value={[ cowOptions, dispatch ]}>
+    <CowContext.Provider value={[ cowData, dispatch ]}>
       {children}
     </CowContext.Provider>
   );

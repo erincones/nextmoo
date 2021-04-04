@@ -26,9 +26,8 @@ const limit = 999999999999999;
  *
  * @param param0 Spinbox component properties
  */
-export const Spinbox = ({ value = 0, min = -limit, max = limit, step = 1, disabled, onChange, className }: SpinboxProps): JSX.Element => {
+export const Spinbox = ({ value = 40, min = -limit, max = limit, step = 1, disabled, onChange, className }: SpinboxProps): JSX.Element => {
   const [ state, setState ] = useState(value);
-
 
   // Value handler
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {

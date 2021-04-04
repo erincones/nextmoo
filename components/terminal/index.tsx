@@ -1,7 +1,7 @@
 import { useRef, useReducer, useContext, useMemo, useCallback, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
 
-import { CowOptions, moo } from "cowsayjs";
-import { CowContext } from "../../contexts/cow";
+import { moo } from "cowsayjs";
+import { CowContext, CowData } from "../../contexts/cow";
 
 import { Prompt } from "./prompt";
 import { Help } from "./help";
@@ -40,14 +40,14 @@ interface ScrollHistoryAction {
 interface HandleCommandAction {
   readonly type: `HANDLE_COMMAND`;
   readonly command: string;
-  readonly cowOptions: CowOptions;
+  readonly cowData: CowData;
   readonly run?: boolean;
 }
 
 /** Command actions */
 interface ExecCommandAction {
   readonly type: `EXEC_COMMAND`;
-  readonly cowOptions: CowOptions;
+  readonly cowData: CowData;
 }
 
 /** Action */
@@ -72,23 +72,10 @@ const initialEnv: Environment = {
  * @param action Scroll history action
  */
 const scrollHistory = (env: Environment, { type }: ScrollHistoryAction): Environment => {
-  const [ workspace, history ] = env.history[env.user];
-  const max = workspace.length - 1;
-  let index = env.index + (type === `HISTORY_BACKWARD` ? -1 : 1);
-  index = index < 0 ? 0 : index > max ? max : index;
+  const size = env.history[env.user][0].length;
+  const index = env.index + (type === `HISTORY_BACKWARD` ? -1 : 1);
 
-  // Updated environment
-  return {
-    ...env,
-    index,
-    history: {
-      ...env.history,
-      [env.user]: [
-        [ ...workspace.slice(0, env.index), history[index], ...workspace.slice(env.index + 1) ],
-        [ ...history ]
-      ]
-    }
-  };
+  return ((index < 0) || (index >= size)) ? env : { ...env, index };
 };
 
 /**
@@ -97,7 +84,7 @@ const scrollHistory = (env: Environment, { type }: ScrollHistoryAction): Environ
  * @param env Current environment
  * @param action Handle command action
  */
-const handleCommand = (env: Environment, { command, cowOptions, run = false }: HandleCommandAction): Environment => {
+const handleCommand = (env: Environment, { command, cowData, run = false }: HandleCommandAction): Environment => {
   const [ workspace, history ] = env.history[env.user];
 
   const nextEnv: Environment = {
@@ -113,7 +100,7 @@ const handleCommand = (env: Environment, { command, cowOptions, run = false }: H
 
   // Updated environment
   return run || /\r\n|[\n\r\f\v\u2028\u2029\u0085]/.test(command) ?
-    execCommand(nextEnv, { cowOptions } as ExecCommandAction) :
+    execCommand(nextEnv, { cowData } as ExecCommandAction) :
     nextEnv;
 };
 
@@ -123,23 +110,20 @@ const handleCommand = (env: Environment, { command, cowOptions, run = false }: H
  * @param env Current environment
  * @param action Execute command action
  */
-const execCommand = (env: Environment, { cowOptions }: ExecCommandAction): Environment => {
+const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environment => {
   // Parse input
   const [ workspace, history ] = env.history[env.user].map(list => [ ...list ]);
   const input = workspace[env.index].split(/\r\n|[\n\r\f\v\u2028\u2029\u0085]/g);
   const output = [ ...env.output ];
   let user = env.user;
 
-  // Update workspace
-  if (env.index < (workspace.length - 1)) {
-    workspace.splice(env.index, 1, history[env.index]);
-  }
-
 
   // Interprete input
   input.forEach(command => {
     // Parse command
     let match = command.trimLeft().match(/^\s*(\S+)(?:\s+(.+))?\s*$/);
+    let key = output.length -1;
+    output.push(<Prompt key={key++} user={user} path="moo" className={line}>{command}</Prompt>);
 
     if (match === null) {
       return;
@@ -147,6 +131,7 @@ const execCommand = (env: Environment, { cowOptions }: ExecCommandAction): Envir
 
     // Update history
     history[history.length - 1] = command;
+    workspace[workspace.length - 1] = command;
     history.push(``);
     workspace.push(``);
 
@@ -166,8 +151,6 @@ const execCommand = (env: Environment, { cowOptions }: ExecCommandAction): Envir
 
 
     // Execute command
-    let key = output.length -1;
-    output.push(<Prompt key={key++} user={user} path="moo" className={line}>{command}</Prompt>);
 
     switch (bin) {
       // Simple commands
@@ -176,7 +159,7 @@ const execCommand = (env: Environment, { cowOptions }: ExecCommandAction): Envir
       case `echo`:  output.push(<pre key={key}>{/\S/.test(args) ? args.trim() : `\n`}</pre>); return;
       case `help`:  output.push(<Help key={key} />); return;
       case `ls`:    output.push(<Ls key={key} />); return;
-      case `share`: output.push(<Share key={key} data={cowOptions} />); return;
+      case `share`: output.push(<Share key={key} data={cowData} />); return;
 
       // History
       case `history`:
@@ -201,6 +184,11 @@ const execCommand = (env: Environment, { cowOptions }: ExecCommandAction): Envir
     }
   });
 
+
+  // Update workspace
+  if (env.index < (workspace.length - 1)) {
+    workspace.splice(env.index, 1, history[env.index]);
+  }
 
   // Updated environment
   return {
@@ -247,11 +235,12 @@ const initializer = (env: Environment): Environment => {
  * @param props Terminal component properties
  */
 export const Terminal = (): JSX.Element => {
+  const terminal = useRef<HTMLDivElement>(null);
   const prompt = useRef<HTMLPreElement>(null);
   const textArea = useRef<HTMLTextAreaElement>(null);
 
   const [ { user, output, index, history }, dispatch ] = useReducer(reducer, initialEnv, initializer);
-  const [ cowOptions ] = useContext(CowContext);
+  const [ cowData ] = useContext(CowContext);
 
 
   // Terminal output
@@ -259,22 +248,24 @@ export const Terminal = (): JSX.Element => {
 
   // Cow message and options
   const { message, ...options } = useMemo(() => ({
-    ...cowOptions,
+    ...cowData,
     mode: undefined,
-    eyes: cowOptions.eyes.padEnd(2),
-    tongue: cowOptions.tongue.padEnd(2),
-    wrap: cowOptions.noWrap ? false : cowOptions.wrap,
+    eyes: cowData.eyes.padEnd(2),
+    tongue: cowData.tongue.padEnd(2),
+    wrap: cowData.noWrap ? false : cowData.wrap,
     noWrap: undefined
-  }), [ cowOptions ]);
+  }), [ cowData ]);
 
   // Change Handler
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    const padding = prompt.current?.innerText.length || 0;
-    dispatch({ type: `HANDLE_COMMAND`, command: e.currentTarget.value.slice(padding), cowOptions });
-  }, [ cowOptions ]);
+    const padding = (prompt.current as HTMLPreElement).innerText.length;
+    dispatch({ type: `HANDLE_COMMAND`, command: e.currentTarget.value.slice(padding), cowData });
+  }, [ cowData ]);
 
   // Key down handler
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
+    const container = terminal.current as HTMLDivElement;
+
     switch (e.key) {
       case `ArrowUp`:
         e.preventDefault();
@@ -283,18 +274,19 @@ export const Terminal = (): JSX.Element => {
 
       case `ArrowDown`:
         e.preventDefault();
-        dispatch({ type: `HISTORY_BACKWARD` });
+        dispatch({ type: `HISTORY_FORWARD` });
         return;
 
       case `Enter`:
         e.preventDefault();
-        dispatch({ type: `EXEC_COMMAND`, cowOptions });
+        container.scrollTop = container.scrollHeight;
+        dispatch({ type: `EXEC_COMMAND`, cowData });
     }
-  }, [ cowOptions ]);
+  }, [ cowData ]);
 
   // Select handler
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
-    const padding = prompt.current?.innerHTML.length || 0;
+    const padding = (prompt.current as HTMLPreElement).innerText.length;
 
     if (e.currentTarget.selectionStart < padding) {
       e.currentTarget.selectionStart = padding;
@@ -304,21 +296,21 @@ export const Terminal = (): JSX.Element => {
 
   // Return terminal component
   return (
-    <div className="flex flex-col flex-grow cursor-text px-px w-full md:w-7/12">
+    <div ref={terminal} className="flex flex-col flex-grow cursor-text overflow-auto px-px w-full md:w-7/12">
       {/* Cow */}
-      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto overflow-y-visible">
+      <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto">
         {moo(message, options)}
       </pre>
 
       {/* Terminal */}
-      <div id="terminal" className="flex flex-col flex-grow overflow-y-auto md:min-h-55">
+      <div id="terminal" className="flex flex-col flex-grow">
         {/* Output */}
         {output}
 
         {/* Input */}
         <div className="relative flex flex-grow">
           <Prompt ref={prompt} user={user} path="moo" className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
-          <textarea ref={textArea} value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap focus:outline-none resize-none w-full" />
+          <textarea ref={textArea} value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
         </div>
       </div>
     </div>

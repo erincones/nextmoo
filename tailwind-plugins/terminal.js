@@ -3,6 +3,8 @@ const plugin = require(`tailwindcss/plugin`);
 
 /**
  * Default terminal config
+ *
+ * @type {import("tailwindcss/tailwind-config").TailwindConfig}
  */
 const config = {
   theme: {

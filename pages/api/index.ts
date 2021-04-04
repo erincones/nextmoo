@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { moo } from "cowsayjs";
-import { parseBody, parseData } from "../../utils/parse";
+import { parseBody, normalizeCowData } from "../../utils/parse";
 
 
 /**
@@ -17,7 +17,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   res.setHeader(`Access-Control-Allow-Origin`, `*`);
 
 
-  // Moo options
+  // Moo data
   let data;
 
   // Check method
@@ -27,8 +27,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     case `OPTIONS`: res.end(); return;
 
     // Allowed methods
-    case `GET`: data = parseData(req.query); break;
-    case `POST`: data = parseData(await parseBody(req)); break;
+    case `GET`: data = normalizeCowData(req.query); break;
+    case `POST`: data = normalizeCowData(await parseBody(req)); break;
 
     // Unknown methods
     default: res.status(405).send(moo(`405: Method not allowed`)); return;
@@ -39,8 +39,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   const { message, ...options } = data;
 
   // Send cow
-  res.setHeader(`Content-Type`, `text/plain`);
-  res.send(moo(message, options));
+  res.setHeader(`Content-Type`, `text/plain; charset=utf-8`);
+  res.send(`${moo(message, options)}\n`);
 };
 
 
