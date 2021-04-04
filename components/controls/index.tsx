@@ -1,6 +1,6 @@
 import { useContext, useMemo, useCallback, useEffect, ChangeEvent, FormEvent } from "react";
 
-import { store } from "../../contexts/store";
+import { CowContext } from "../../contexts/cow";
 
 import { corral } from "cowsayjs/cows";
 import { modes } from "cowsayjs/lib/mode";
@@ -17,8 +17,8 @@ import { Checkbox } from "./checkbox";
  * @param props Controls component properties
  */
 export const Controls = (): JSX.Element => {
-  const { state, dispatch } = useContext(store);
-  const { message, cow, mode, eyes, tongue, wrap, noWrap, action } = state;
+  const [ cowData, dispatch ] = useContext(CowContext);
+  const { message, cow, mode, eyes, tongue, wrap, noWrap, action } = cowData;
 
 
   // Cow options
@@ -50,49 +50,49 @@ export const Controls = (): JSX.Element => {
 
   // Action change handler
   const handleActionChange = useCallback((action: CowAction): void => {
-    dispatch({ type: `SET_ACTION`, payload: action });
+    dispatch({ type: `SET_ACTION`, action });
   }, [ dispatch ]);
 
   // Cow change handler
   const handleCowChange = useCallback((e: ChangeEvent<HTMLSelectElement>): void => {
-    dispatch({ type: `SET_COW`, payload: e.currentTarget.value });
+    dispatch({ type: `SET_COW`, cow: e.currentTarget.value });
   }, [ dispatch ]);
 
   // Mode change handler
   const handleModeChange = useCallback((e: ChangeEvent<HTMLSelectElement>): void => {
-    dispatch({ type: `SET_MODE`, payload: e.currentTarget.value });
+    dispatch({ type: `SET_MODE`, mode: e.currentTarget.value });
   }, [ dispatch ]);
 
   // Tongue change handler
   const handleEyesChange = useCallback((e: ChangeEvent<HTMLInputElement>): void => {
     const { value, selectionStart } = e.currentTarget;
-    dispatch({ type: `SET_EYES`, payload: value, meta: selectionStart });
+    dispatch({ type: `SET_EYES`, eyes: value, cursor: selectionStart });
   }, [ dispatch ]);
 
   // Tongue change handler
   const handleTongueChange = useCallback((e: ChangeEvent<HTMLInputElement>): void => {
     const { value, selectionStart } = e.currentTarget;
-    dispatch({ type: `SET_TONGUE`, payload: value, meta: selectionStart });
+    dispatch({ type: `SET_TONGUE`, tongue: value, cursor: selectionStart });
   }, [ dispatch ]);
 
   // Wrap change handler
   const handleWrapChange = useCallback((value: number): void => {
-    dispatch({ type: `SET_WRAP`, payload: value });
+    dispatch({ type: `SET_WRAP`, wrap: value });
   }, [ dispatch ]);
 
   // No wrap change handler
   const handleNoWrapClick = useCallback((value: boolean): void => {
-    dispatch({ type: `SET_NO_WRAP`, payload: !value });
+    dispatch({ type: `SET_NO_WRAP`, noWrap: !value });
   }, [ dispatch ]);
 
   // No wrap change handler
   const handleNoWrapChange = useCallback((value: boolean): void => {
-    dispatch({ type: `SET_NO_WRAP`, payload: value });
+    dispatch({ type: `SET_NO_WRAP`, noWrap: value });
   }, [ dispatch ]);
 
   // Message change handler
   const handleMessageChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>): void => {
-    dispatch({ type: `SET_MESSAGE`, payload: e.currentTarget.value });
+    dispatch({ type: `SET_MESSAGE`, message: e.currentTarget.value });
   }, [ dispatch ]);
 
 

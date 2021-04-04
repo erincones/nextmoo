@@ -1,4 +1,4 @@
-
+import { forwardRef } from "react";
 
 /**
  * Propmt component properties
@@ -18,7 +18,7 @@ interface PromptProps {
  *
  * @param props Prompt component properties
  */
-export const Prompt = ({ id, user = `user`, host = `localhost`, path = `~`, className, children = `` }: PromptProps): JSX.Element => {
+export const Prompt = forwardRef<HTMLPreElement, PromptProps>(({ id, user = `user`, host = `localhost`, path = `~`, className, children = `` }: PromptProps, ref): JSX.Element => {
   // Prompt content
   const content = user === `root` ? (
     <strong>
@@ -38,5 +38,7 @@ export const Prompt = ({ id, user = `user`, host = `localhost`, path = `~`, clas
 
 
   // Return prompt component
-  return <pre id={id} className={className}>{content}{children}</pre>;
-};
+  return <pre ref={ref} id={id} className={className}>{content}{children}</pre>;
+});
+
+Prompt.displayName = `Prompt`;

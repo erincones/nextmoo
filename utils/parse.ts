@@ -5,7 +5,7 @@ import { CowFullOptions } from "cowsayjs";
 /**
  * Data
  */
-interface Data {
+export interface Data {
   readonly [key: string]: unknown;
 }
 

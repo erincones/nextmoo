@@ -1,5 +1,3 @@
-import { Stack } from "../../hooks/history";
-
 import { line } from "./utils";
 
 
@@ -7,7 +5,8 @@ import { line } from "./utils";
  * History component properties
  */
 interface HistoryProps {
-  stack: Stack;
+  readonly workspace: string[];
+  readonly history: string[];
 }
 
 
@@ -16,18 +15,23 @@ interface HistoryProps {
  *
  * @param props History component properties
  */
-export const History = ({ stack }: HistoryProps): JSX.Element => {
-  const min = stack.stack.length.toString().length;
+export const History = ({ workspace, history }: HistoryProps): JSX.Element => {
+  const min = workspace.length.toString().length;
   const padding = min < 5 ? 5 : min;
 
   // Return history component
   return (
     <>
-      {(stack.stack.length === 0) && stack.stack.map((command, i) => (
-        <pre key={i} className={line}>
-          {(i + 1).toString().padStart(padding)}  {command}
-        </pre>
-      ))}
+      {workspace.slice(0, -1).map((command, i) => {
+        const index = (i + 1).toString().padStart(padding);
+        const diff = command !== history[i] ? `* ` : `  `;
+
+        return (
+          <pre key={i} className={line}>
+            {`${index}${diff}${command}`}
+          </pre>
+        );
+      })}
     </>
   );
 };

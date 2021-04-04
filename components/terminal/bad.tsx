@@ -6,7 +6,7 @@ import { line } from "./utils";
 interface BadProps {
   readonly shell?: string;
   readonly command: string;
-  readonly locked?: boolean;
+  readonly message: string;
 }
 
 
@@ -15,8 +15,6 @@ interface BadProps {
  *
  * @param props Bad component properties
  */
-export const Bad = ({ shell = `shell`, command, locked = false }: BadProps): JSX.Element => {
-  return locked === true ?
-    <pre className={line}>{shell}: {command}: Operation not permitted</pre> :
-    <pre className={line}>{shell}: {command}: Command not found</pre>;
+export const Bad = ({ shell = `bash`, command, message }: BadProps): JSX.Element => {
+  return <pre className={line}>{`${shell}: ${command}: ${message}`}</pre>;
 };
