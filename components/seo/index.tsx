@@ -1,6 +1,6 @@
 import Head from "next/head";
 
-import { OpenGraph } from "./opengraph";
+import { OpenGraph } from "./open-graph";
 import { TwitterCard } from "./twitter";
 
 
