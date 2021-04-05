@@ -259,7 +259,7 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
     if (!first.current) {
       const data = purgeCowData(cowData, 30);
 
-      if (data.message?.length === 0) data.message = ``;
+      if (data.message === undefined) data.message = ``;
       else if (data.message === `moo!`) delete data.message;
 
       history.replaceState(``, ``, `${location.origin}/${stringifyCowData(data)}`);

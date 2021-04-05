@@ -33,8 +33,11 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
     const get = stringifyCowData(json);
 
     // Web data
-    if (data.wrap === 30)      delete json.wrap;
-    else if (data.wrap === 40) json.wrap = 40;
+    if (json.message === undefined) json.message = ``;
+    else if (json.message === `moo!`) delete json.message;
+
+    if (json.wrap === undefined) json.wrap = 40;
+    else if (json.wrap === 30) delete json.wrap;
 
     const web = stringifyCowData(json);
 
