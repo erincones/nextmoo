@@ -49,7 +49,7 @@ export const Checkbox = ({ children, id, checked, onClick, onChange, className }
       <input id={id} type="checkbox" value={id} checked={checked} onChange={handleChange} className="hidden" />
       <label htmlFor={id} onClick={handleLabelClick}>
         <span className="cursor-pointer">
-          [<button ref={button} type="button" tabIndex={0} onClick={handleClick} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `x` : ` `}</button>]
+          [<button ref={button} type="button" tabIndex={0} onClick={handleClick} aria-label="checkbox" className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `x` : ` `}</button>]
         </span>
         {children}
       </label>

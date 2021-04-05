@@ -364,7 +364,7 @@ export const Terminal = (): JSX.Element => {
 
   // Return terminal component
   return (
-    <div ref={terminal} className="flex flex-col flex-grow cursor-text overflow-auto px-px w-full md:w-7/12">
+    <section ref={terminal} className="flex flex-col flex-grow cursor-text overflow-auto px-px w-full md:w-7/12">
       {/* Cow */}
       <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto">
         {moo(message, options)}
@@ -378,9 +378,9 @@ export const Terminal = (): JSX.Element => {
         {/* Input */}
         <div className="relative flex flex-grow">
           <Prompt ref={prompt} user={user} path="moo" className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
-          <textarea ref={textArea} value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
+          <textarea ref={textArea} value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} aria-label="input" className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
         </div>
       </div>
-    </div>
+    </section>
   );
 };

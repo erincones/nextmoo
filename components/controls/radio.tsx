@@ -57,7 +57,7 @@ export const Radio = <T extends V>({ children, id, name, value, checked, onChang
       <input id={id} type="radio" name={name} value={value} checked={checked} onChange={handleChange} className="hidden" />
       <label htmlFor={id} onClick={handleLabelClick}>
         <span className="cursor-pointer">
-          (<button ref={button} type="button" tabIndex={0} onClick={handleChange} className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `*` : ` `}</button>)
+          (<button ref={button} type="button" tabIndex={0} onClick={handleChange} aria-label="radio" className="whitespace-pre focus:bg-white focus:text-black focus:outline-none">{checked ? `*` : ` `}</button>)
         </span>
         {children}
       </label>

@@ -82,8 +82,8 @@ export const Spinbox = ({ value = 40, min = -limit, max = limit, step = 1, disab
 
       {/* Spin buttons */}
       <div className="flex flex-col w-3">
-        <button disabled={disabled} onClick={handleUpClick} className="focus:bg-white arrow-up-white focus:arrow-up-black disabled:arrow-up-gray-light bg-no-repeat bg-center focus:outline-none disabled:cursor-default -ml-px h-2" />
-        <button disabled={disabled} onClick={handleDownClick} className="focus:bg-white arrow-down-white focus:arrow-down-black disabled:arrow-down-gray-light bg-no-repeat bg-center focus:outline-none disabled:cursor-default -ml-px h-2" />
+        <button disabled={disabled} onClick={handleUpClick} aria-label="increment" className="focus:bg-white arrow-up-white focus:arrow-up-black disabled:arrow-up-gray-light bg-no-repeat bg-center focus:outline-none disabled:cursor-default -ml-px h-2" />
+        <button disabled={disabled} onClick={handleDownClick} aria-label="decrement" className="focus:bg-white arrow-down-white focus:arrow-down-black disabled:arrow-down-gray-light bg-no-repeat bg-center focus:outline-none disabled:cursor-default -ml-px h-2" />
       </div>
     </div>
   );
