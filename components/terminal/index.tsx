@@ -265,8 +265,8 @@ export const Terminal = (): JSX.Element => {
 
   // Scroll to bottom
   const scrollBottom = useCallback(() => {
-    const container = terminal.current as HTMLDivElement;
-    container.scrollTop = container.scrollHeight;
+    const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
+    main.scrollTop = main.scrollHeight;
   }, []);
 
   // Change Handler
@@ -314,13 +314,13 @@ export const Terminal = (): JSX.Element => {
   useEffect(() => {
     // First render
     if (first.current.input) {
-      const io = terminal.current as HTMLDivElement;
+      first.current.input = false;
       const ps1 = prompt.current as HTMLPreElement;
       const input = textArea.current as HTMLTextAreaElement;
-      first.current.input = false;
+      const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
 
       // Fit height
-      if (io.clientHeight < io.scrollHeight) {
+      if (main.clientHeight < main.scrollHeight) {
         const lineHeight = ps1.clientHeight;
         input.style.height = `${lineHeight}px`;
       }
@@ -331,12 +331,11 @@ export const Terminal = (): JSX.Element => {
 
     // Other renders
     else {
-      const io = terminal.current as HTMLDivElement;
       const input = textArea.current as HTMLTextAreaElement;
-      console.log(io.clientHeight, io.scrollHeight);
+      const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
 
       // Container overflow
-      if (io.clientHeight < io.scrollHeight) {
+      if (main.clientHeight < main.scrollHeight) {
         const ps1 = prompt.current as HTMLPreElement;
 
         // Shrink

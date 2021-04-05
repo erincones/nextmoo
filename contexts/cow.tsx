@@ -245,8 +245,8 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
   // Get options from query string
   useNextEffect(() => {
     if (first.current) {
-      const query = location.search.slice(1);
       first.current = false;
+      const query = location.search.slice(1);
 
       if (query.length !== 0) {
         dispatch({ type: `SET_DATA`, data: parse(query) });
