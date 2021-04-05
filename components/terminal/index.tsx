@@ -3,7 +3,7 @@ import { useRef, useContext, useReducer, useMemo, useCallback, useEffect, Change
 import { moo } from "cowsayjs";
 import { CowContext, CowData } from "../../contexts/cow";
 
-import { Prompt } from "./prompt";
+import { Prompt, rawPrompt } from "./prompt";
 import { Help } from "./help";
 import { History } from "./history";
 import { Ls } from "./ls";
@@ -17,7 +17,7 @@ import { line } from "./utils";
  * History
  */
 interface CommandHistory {
-  readonly [key: string]: [ ReadonlyArray<string>, ReadonlyArray<string> ];
+  [key: string]: [ ReadonlyArray<string>, ReadonlyArray<string> ];
 }
 
 /**
@@ -26,7 +26,7 @@ interface CommandHistory {
 interface Environment {
   readonly user: string;
   readonly index: number;
-  readonly history: CommandHistory;
+  readonly history: Readonly<CommandHistory>;
   readonly output: ReactNode[];
 }
 
@@ -64,6 +64,29 @@ const initial: Environment = {
   output: []
 };
 
+/**
+ * Break line regular expression
+ */
+const breakline = /\r\n|[\n\r\f\v\u2028\u2029\u0085]/;
+
+
+/**
+ * End the session for the gived user
+ */
+const endSession = (fullHistory: CommandHistory, user: string, history: string[], workspace: string[], index: number): CommandHistory => {
+  // Restore workspace
+  if (index < workspace.length) {
+    workspace.splice(index, 1, history[index]);
+  }
+
+  // Update history
+  workspace.push(``);
+  history.push(``);
+  fullHistory[user] = [ workspace, history ];
+  return fullHistory;
+};
+
+
 
 /**
  * Scroll the history
@@ -99,7 +122,7 @@ const handleCommand = (env: Environment, { command, cowData, run = false }: Hand
   };
 
   // Updated environment
-  return run || /\r\n|[\n\r\f\v\u2028\u2029\u0085]/.test(command) ?
+  return run || breakline.test(command) ?
     execCommand(nextEnv, { cowData } as ExecCommandAction) :
     nextEnv;
 };
@@ -113,10 +136,16 @@ const handleCommand = (env: Environment, { command, cowData, run = false }: Hand
 const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environment => {
   // Parse input
   const fullHistory = { ...env.history };
-  const [ workspace, history ] = env.history[env.user].map(list => [ ...list ]);
-  const input = workspace[env.index].split(/\r\n|[\n\r\f\v\u2028\u2029\u0085]/g);
+  let [ workspace, history ] = env.history[env.user].map(list => list.slice(0, -1));
+  const input = env.history[env.user][0][env.index].split(breakline);
   const output = [ ...env.output ];
   let user = env.user;
+  let index = env.index;
+
+  // Remove last empty command
+  if ((input.length > 1) && (input[input.length - 1].length === 0)) {
+    input.pop();
+  }
 
 
   // Interprete input
@@ -131,10 +160,8 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
     }
 
     // Update history
-    history[history.length - 1] = command;
-    workspace[workspace.length - 1] = command;
-    history.push(``);
-    workspace.push(``);
+    history.push(command);
+    workspace.push(command);
 
 
     // Check sudo
@@ -152,10 +179,8 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
 
 
     // Execute command
-
     switch (bin) {
       // Simple commands
-      case `exit`:  user = initial.user; return;
       case `clear`: output.splice(0, output.length); return;
       case `echo`:  output.push(<pre key={key} className={line}>{/\S/.test(args) ? args.trim() : `\n`}</pre>); return;
       case `help`:  output.push(<Help key={key} />); return;
@@ -177,11 +202,25 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
       // Super user
       case `su`:
         if (sudo) {
-          user = `root`;
+          // End session and change to the root user
+          endSession(fullHistory, user, history, workspace, index);
 
-          if (!(user in fullHistory)) fullHistory[user] = [ [ `` ], [ `` ] ];
+          user = `root`;
+          [ workspace, history ] = (fullHistory[user] || [ [ `` ], [ `` ] ]).map(list => list.slice(0, -1));
+          index = workspace.length;
         }
         else output.push(<Bad key={key} shell="nextmoo" command={bin} message="Permission denied" />);
+        return;
+
+      // End session and change to the initial user
+      case `exit`:
+        if (user !== initial.user) {
+          endSession(fullHistory, user, history, workspace, index);
+
+          user = initial.user;
+          [ workspace, history ] = (fullHistory[user] || [ [ `` ], [ `` ] ]).map(list => list.slice(0, -1));
+          index = workspace.length;
+        }
         return;
 
       // Unknown
@@ -190,15 +229,9 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
   });
 
 
-  // Update history and workspace
-  fullHistory[env.user] = [ workspace, history ];
-
-  if (env.index < (workspace.length - 1)) {
-    workspace.splice(env.index, 1, history[env.index]);
-  }
-
-
   // Updated environment
+  endSession(fullHistory, user, history, workspace, index);
+
   return {
     user,
     index: fullHistory[user][0].length - 1,
@@ -250,7 +283,8 @@ export const Terminal = (): JSX.Element => {
 
 
   // Terminal output
-  const command = `${` `.repeat(prompt.current?.innerText.length || 0)}${history[user][0][index]}`;
+  const path = `moo`;
+  const command = `${` `.repeat(rawPrompt({ user, path }).length)}${history[user][0][index]}`;
 
   // Cow message and options
   const { message, ...options } = useMemo(() => ({
@@ -271,8 +305,15 @@ export const Terminal = (): JSX.Element => {
 
   // Change Handler
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    const cursor = e.currentTarget.selectionStart;
+    let value = e.currentTarget.value;
+
+    if (breakline.test(value[cursor - 1]) && (value.length !== cursor)) {
+      value = `${value.slice(0, cursor - 1)}${value.slice(cursor)}\n`;
+    }
+
     const padding = (prompt.current as HTMLPreElement).innerText.length;
-    dispatch({ type: `HANDLE_COMMAND`, command: e.currentTarget.value.slice(padding), cowData });
+    dispatch({ type: `HANDLE_COMMAND`, command: value.slice(padding), cowData });
   }, [ cowData ]);
 
   // Key down handler
@@ -286,13 +327,8 @@ export const Terminal = (): JSX.Element => {
       case `ArrowDown`:
         e.preventDefault();
         dispatch({ type: `HISTORY_FORWARD` });
-        return;
-
-      case `Enter`:
-        e.preventDefault();
-        dispatch({ type: `EXEC_COMMAND`, cowData });
     }
-  }, [ cowData ]);
+  }, []);
 
   // Select handler
   const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
@@ -335,7 +371,7 @@ export const Terminal = (): JSX.Element => {
       const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
 
       // Container overflow
-      if (main.clientHeight < main.scrollHeight) {
+      if ((main.clientHeight < main.scrollHeight) || (input.clientHeight < input.scrollHeight)) {
         const ps1 = prompt.current as HTMLPreElement;
 
         // Shrink
@@ -353,7 +389,7 @@ export const Terminal = (): JSX.Element => {
       // Release
       else input.style.height = ``;
     }
-  }, [ command, cowData.message, cowData.cow, cowData.wrap, cowData.noWrap ]);
+  });
 
   // Scroll to bottom when output changes
   useEffect(() => {
@@ -377,8 +413,8 @@ export const Terminal = (): JSX.Element => {
 
         {/* Input */}
         <div className="relative flex flex-grow">
-          <Prompt ref={prompt} user={user} path="moo" className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
-          <textarea ref={textArea} value={command} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} aria-label="input" className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
+          <Prompt ref={prompt} user={user} path={path} className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
+          <textarea ref={textArea} rows={1} value={command} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} aria-label="input" className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
         </div>
       </div>
     </section>
