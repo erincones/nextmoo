@@ -116,7 +116,7 @@ export const Controls = (): JSX.Element => {
             {/* Action */}
             <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
               <legend className="cursor-default px-1">Action</legend>
-              <div className="flex">
+              <div aria-role="rolegroup" className="flex">
                 <Radio name="action" id="say" value="say" checked={action === `say`} onChange={handleActionChange} className="w-3/7">
                   Say
                 </Radio>
@@ -164,7 +164,7 @@ export const Controls = (): JSX.Element => {
                 <label htmlFor="wrap-col">Wrap column</label>
               </legend>
               <div className="flex">
-                <Spinbox value={wrap} min={0} disabled={noWrap} onChange={handleWrapChange} className="pr-2 w-5/12" />
+                <Spinbox id="wrap-col" value={wrap} min={0} disabled={noWrap} onChange={handleWrapChange} className="pr-2 w-5/12" />
                 <Checkbox id="no-wrap" checked={noWrap} onClick={handleNoWrapClick} onChange={handleNoWrapChange} className="pl-2 ml-4 w-7/12">
                   No wrap
                 </Checkbox>

@@ -9,6 +9,8 @@ import { Terminal } from "../components/terminal";
  * Home component
  */
 const Home = (): JSX.Element => {
+
+
   return (
     <>
       <SEO title="Next Moo!" />

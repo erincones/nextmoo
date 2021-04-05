@@ -333,6 +333,7 @@ export const Terminal = (): JSX.Element => {
     else {
       const io = terminal.current as HTMLDivElement;
       const input = textArea.current as HTMLTextAreaElement;
+      console.log(io.clientHeight, io.scrollHeight);
 
       // Container overflow
       if (io.clientHeight < io.scrollHeight) {
@@ -378,7 +379,7 @@ export const Terminal = (): JSX.Element => {
         {/* Input */}
         <div className="relative flex flex-grow">
           <Prompt ref={prompt} user={user} path="moo" className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
-          <textarea ref={textArea} value={command} rows={1} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} aria-label="input" className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
+          <textarea ref={textArea} value={command} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} aria-label="input" className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
         </div>
       </div>
     </section>

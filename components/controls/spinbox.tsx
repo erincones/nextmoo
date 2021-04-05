@@ -5,6 +5,7 @@ import { useState, useCallback, ChangeEvent, WheelEvent, useEffect } from "react
  * Spinbox component properties
  */
 interface SpinboxProps {
+  readonly id?: string;
   readonly value?: number;
   readonly min?: number;
   readonly max?: number;
@@ -26,7 +27,7 @@ const limit = 999999999999999;
  *
  * @param param0 Spinbox component properties
  */
-export const Spinbox = ({ value = 40, min = -limit, max = limit, step = 1, disabled, onChange, className }: SpinboxProps): JSX.Element => {
+export const Spinbox = ({ id, value = 40, min = -limit, max = limit, step = 1, disabled, onChange, className }: SpinboxProps): JSX.Element => {
   const [ state, setState ] = useState(value);
 
   // Value handler
@@ -78,7 +79,7 @@ export const Spinbox = ({ value = 40, min = -limit, max = limit, step = 1, disab
   // Return Spinbox
   return (
     <div className={`flex ${className}`}>
-      <input id="wrap-col" type="text" inputMode="numeric" value={state} min={min} max={max} disabled={disabled} onChange={handleChange} onWheel={handleWheel} className="bg-transparent text-white disabled:text-gray-light bg-right bg-no-repeat focus:outline-none w-full-3" />
+      <input id={id} type="text" inputMode="numeric" value={state} min={min} max={max} disabled={disabled} onChange={handleChange} onWheel={handleWheel} className="bg-transparent text-white disabled:text-gray-light bg-right bg-no-repeat focus:outline-none w-full-3" />
 
       {/* Spin buttons */}
       <div className="flex flex-col w-3">
