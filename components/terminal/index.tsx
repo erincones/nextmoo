@@ -73,7 +73,7 @@ const breakline = /\r\n|[\n\r\f\v\u2028\u2029\u0085]/;
 /**
  * End the session for the gived user
  */
-const endSession = (fullHistory: CommandHistory, user: string, history: string[], workspace: string[], index: number): CommandHistory => {
+const endSession = (commandHistory: CommandHistory, user: string, index: number, workspace: string[], history: string[]): CommandHistory => {
   // Restore workspace
   if (index < workspace.length) {
     workspace.splice(index, 1, history[index]);
@@ -82,8 +82,29 @@ const endSession = (fullHistory: CommandHistory, user: string, history: string[]
   // Update history
   workspace.push(``);
   history.push(``);
-  fullHistory[user] = [ workspace, history ];
-  return fullHistory;
+  commandHistory[user] = [ workspace, history ];
+
+  return commandHistory;
+};
+
+/**
+ * Change the current user
+ */
+const changeUser = (commandHistory: CommandHistory, newUser: string, user: string, index: number, workspace: string[], history: string[]): [ CommandHistory, string, number, string[], string[] ] => {
+  // End session
+  endSession(commandHistory, user, index, workspace, history);
+  index = workspace.length;
+
+  // Change user
+  if (newUser === user) {
+    workspace.splice(index - 1, 1);
+    history.splice(index - 1, 1);
+  }
+  else {
+    [ workspace, history ] = (commandHistory[newUser] || [ [ `` ], [ `` ] ]).map(list => list.slice(0, -1));
+  }
+
+  return [ commandHistory, newUser, index, workspace, history ];
 };
 
 
@@ -135,8 +156,9 @@ const handleCommand = (env: Environment, { command, cowData, run = false }: Hand
  */
 const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environment => {
   // Parse input
-  const fullHistory = { ...env.history };
+  const commandHistory = { ...env.history };
   let [ workspace, history ] = env.history[env.user].map(list => list.slice(0, -1));
+
   const input = env.history[env.user][0][env.index].split(breakline);
   const output = [ ...env.output ];
   let user = env.user;
@@ -199,28 +221,15 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
         else output.push(<History key={key} workspace={workspace} history={history} />);
         return;
 
-      // Super user
-      case `su`:
-        if (sudo) {
-          // End session and change to the root user
-          endSession(fullHistory, user, history, workspace, index);
-
-          user = `root`;
-          [ workspace, history ] = (fullHistory[user] || [ [ `` ], [ `` ] ]).map(list => list.slice(0, -1));
-          index = workspace.length;
-        }
-        else output.push(<Bad key={key} shell="nextmoo" command={bin} message="Permission denied" />);
+      // End session and change to the initial user
+      case `exit`: [ , user, index, workspace, history ] = changeUser(commandHistory, initial.user, user, index, history, workspace);
         return;
 
-      // End session and change to the initial user
-      case `exit`:
-        if (user !== initial.user) {
-          endSession(fullHistory, user, history, workspace, index);
-
-          user = initial.user;
-          [ workspace, history ] = (fullHistory[user] || [ [ `` ], [ `` ] ]).map(list => list.slice(0, -1));
-          index = workspace.length;
-        }
+      // Super user
+      case `su`:
+        // End session and change to the root user
+        if (sudo) [ , user, index, workspace, history ] = changeUser(commandHistory, `root`, user, index, history, workspace);
+        else output.push(<Bad key={key} shell="nextmoo" command={bin} message="Permission denied" />);
         return;
 
       // Unknown
@@ -230,12 +239,12 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
 
 
   // Updated environment
-  endSession(fullHistory, user, history, workspace, index);
+  endSession(commandHistory, user, index, workspace, history);
 
   return {
     user,
-    index: fullHistory[user][0].length - 1,
-    history: fullHistory,
+    index: commandHistory[user][0].length - 1,
+    history: commandHistory,
     output
   };
 };
