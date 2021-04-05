@@ -116,7 +116,7 @@ export const Controls = (): JSX.Element => {
             {/* Action */}
             <fieldset className="border border-white px-2 pb-2 ml-4 w-7/12">
               <legend className="cursor-default px-1">Action</legend>
-              <div aria-role="rolegroup" className="flex">
+              <div role="radiogroup" className="flex">
                 <Radio name="action" id="say" value="say" checked={action === `say`} onChange={handleActionChange} className="w-3/7">
                   Say
                 </Radio>
