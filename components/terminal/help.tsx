@@ -27,6 +27,8 @@ export const Help = (): JSX.Element => {
         <li className={item}>share</li>
         <li className={item}>sudo [COMMAND]</li>
       </ul>
+      {`\n`}
+      Powered by <a href="https://www.npmjs.com/package/cowsayjs" target="noopener noreferrer" className="underline focus:outline-none">cowsayjs</a>.{`\n`}
     </pre>
   );
 };

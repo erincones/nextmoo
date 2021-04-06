@@ -1,6 +1,6 @@
-import { useRef, useContext, useReducer, useMemo, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
+import { useRef, useContext, useReducer, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
 
-import { moo } from "cowsayjs";
+import { CowAllOptions, moo } from "cowsayjs";
 import { CowContext, CowData } from "../../contexts/cow";
 
 import { Prompt, rawPrompt } from "./prompt";
@@ -295,15 +295,16 @@ export const Terminal = (): JSX.Element => {
   const path = `moo`;
   const command = `${` `.repeat(rawPrompt({ user, path }).length)}${history[user][0][index]}`;
 
-  // Cow message and options
-  const { message, ...options } = useMemo(() => ({
-    ...cowData,
+  // Cow options
+  const cow: CowAllOptions = {
+    message: cowData.message,
+    cow: cowData.cow,
     mode: undefined,
     eyes: cowData.eyes.padEnd(2),
     tongue: cowData.tongue.padEnd(2),
     wrap: cowData.noWrap ? false : cowData.wrap,
-    noWrap: undefined
-  }), [ cowData ]);
+    action: cowData.action
+  };
 
 
   // Scroll to bottom
@@ -412,7 +413,7 @@ export const Terminal = (): JSX.Element => {
     <section ref={terminal} className="flex flex-col flex-grow cursor-text overflow-auto px-px w-full md:w-7/12">
       {/* Cow */}
       <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto">
-        {moo(message, options)}
+        {moo(cow)}
       </pre>
 
       {/* Terminal */}

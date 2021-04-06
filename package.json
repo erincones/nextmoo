@@ -19,9 +19,8 @@
   },
   "homepage": "https://nextmoo.vercel.app",
   "dependencies": {
-    "cowsayjs": "^0.3.4",
+    "cowsayjs": "^1.0.1",
     "next": "^10.1.2",
-    "next-pwa": "^5.1.4",
     "postcss-flexbugs-fixes": "^5.0.0",
     "postcss-import": "^14.0.1",
     "postcss-preset-env": "^6.7.0",

@@ -7,6 +7,8 @@ This is a clone of the [Moo!][moo] project coded from scratch, this time
 developed with [Next.js][nextjs] and deployed with [Vercel][vercel]. Many
 issues have been solved and many improvements have been made.
 
+Powered by [cowsayjs][cowsayjs].
+
 ```
  ______
 < moo! >
@@ -147,6 +149,7 @@ Share and enjoy!
 
 <!-- References -->
 [moo]: https://github.com/erincones/moo
+[cowsayjs]: https://www.npmjs.com/package/cowsayjs
 [nextjs]: https://nextjs.org
 [vercel]: https://vercel.com
 

@@ -1,5 +1,5 @@
 import { NextApiRequest } from "next";
-import { CowFullOptions } from "cowsayjs";
+import { CowAllOptions } from "cowsayjs";
 import { stringify } from "querystring";
 
 import { CowData } from "../contexts/cow";
@@ -10,13 +10,6 @@ import { CowData } from "../contexts/cow";
  */
 export interface Data {
   [key: string]: unknown;
-}
-
-/**
- * Cow parsed data
- */
-export interface CowParsedData extends CowFullOptions {
-  message?: string;
 }
 
 
@@ -50,7 +43,7 @@ export const parseBody = (req: NextApiRequest): Promise<Readonly<Data>> => (
  *
  * @param opts Options
  */
-export const normalizeCowData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap, action = `say` }: Data): CowParsedData => ({
+export const normalizeCowData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap, action = `say` }: Data): CowAllOptions => ({
   message: typeof message === `string` ? message : undefined,
   cow: typeof cow === `string` ? cow : `default`,
   mode:typeof mode === `string` ? mode : `u`,
@@ -71,8 +64,8 @@ export const normalizeCowData = ({ message, cow = `default`, mode = `u`, eyes = 
  * @param cowData Cow data
  * @param defWrap Default wrap
  */
-export const purgeCowData = ({ message, cow, mode, eyes, tongue, wrap, action, noWrap }: CowData, defWrap = 40): CowParsedData => {
-  const data: CowParsedData = {};
+export const purgeCowData = ({ message, cow, mode, eyes, tongue, wrap, action, noWrap }: CowData, defWrap = 40): CowAllOptions => {
+  const data: CowAllOptions = {};
 
   if (message.length !== 0) data.message = message;
   if (cow !== `default`)    data.cow = cow;
@@ -96,7 +89,7 @@ export const purgeCowData = ({ message, cow, mode, eyes, tongue, wrap, action, n
  *
  * @param data Cow data
  */
-export const stringifyCowData = (cow: CowParsedData, browser = true): string => {
+export const stringifyCowData = (cow: CowAllOptions, browser = true): string => {
   // Stringify
   const query = stringify(cow as never);
 

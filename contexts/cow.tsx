@@ -1,10 +1,11 @@
 import { createContext, useRef, useReducer, useEffect, Dispatch, ReactNode } from "react";
 import { parse } from "querystring";
 
+import { CowAllOptions } from "cowsayjs";
 import { modeFace, faceMode, CowFace } from "cowsayjs/lib/mode";
 import { CowAction } from "cowsayjs/lib/box";
 
-import { normalizeCowData, purgeCowData, stringifyCowData, Data, CowParsedData } from "../utils/parse";
+import { normalizeCowData, purgeCowData, stringifyCowData, Data } from "../utils/parse";
 
 import { Splash } from "../components/seo/splash";
 
@@ -12,7 +13,7 @@ import { Splash } from "../components/seo/splash";
 /**
  * State
  */
-export interface CowData extends Required<CowParsedData> {
+export interface CowData extends Required<CowAllOptions> {
   readonly wrap: number;
   readonly noWrap: boolean;
 }
