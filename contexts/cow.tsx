@@ -1,12 +1,12 @@
 import { createContext, useRef, useReducer, useEffect, Dispatch, ReactNode } from "react";
 import { parse } from "querystring";
 
-import { useNextEffect } from "../hooks/effect";
-
 import { modeFace, faceMode, CowFace } from "cowsayjs/lib/mode";
 import { CowAction } from "cowsayjs/lib/box";
 
 import { normalizeCowData, purgeCowData, stringifyCowData, Data, CowParsedData } from "../utils/parse";
+
+import { Splash } from "../components/seo/splash";
 
 
 /**
@@ -79,7 +79,7 @@ interface NoWrapAction {
 /** Data action */
 interface DataAction {
   readonly type: `SET_DATA`;
-  readonly data: Readonly<Data>;
+  readonly data: Readonly<Data | CowData>;
 }
 
 /** Action */
@@ -239,24 +239,21 @@ export const CowContext = createContext<[ CowData, Dispatch<Action> ]>([ initial
  */
 export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
   const first = useRef(true);
-  const [ cowData, dispatch ] = useReducer(reducer, initial);
+  const [ cowData, dispatch ] = useReducer(reducer, undefined as never);
 
 
-  // Get options from query string
-  useNextEffect(() => {
+  // Query string management
+  useEffect(() => {
+    // Get options from query string on first render
     if (first.current) {
       first.current = false;
       const query = location.search.slice(1);
 
-      if (query.length !== 0) {
-        dispatch({ type: `SET_DATA`, data: parse(query) });
-      }
+      dispatch({ type: `SET_DATA`, data: query.length !== 0 ? parse(query) : initial });
     }
-  }, []);
 
-  // Update query string
-  useEffect(() => {
-    if (!first.current) {
+    // Update the query string with the current cow
+    else {
       const data = purgeCowData(cowData, 30);
 
       if (data.message === undefined) data.message = ``;
@@ -270,7 +267,7 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
   // Return the cow provider
   return (
     <CowContext.Provider value={[ cowData, dispatch ]}>
-      {children}
+      {cowData !== undefined ? children : <Splash />}
     </CowContext.Provider>
   );
 };

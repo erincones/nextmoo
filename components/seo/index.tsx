@@ -26,9 +26,8 @@ export const SEO = ({ title, twitterCard = true, openGraph = true }: SEOProps): 
       {twitterCard && <TwitterCard />}
       {openGraph && <OpenGraph />}
 
-      {/* Title and manifest */}
+      {/* Title */}
       <title>{title}</title>
-      <link rel="manifest" href="/manifest.json" />
     </Head>
   );
 };

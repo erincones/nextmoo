@@ -1,7 +1,8 @@
 {
-  "name": "Moo!",
+  "name": "Next Moo!",
   "short_name": "Moo!",
   "description": "Another web version of cowsay powered by Next.js",
+  "start_url": "/",
   "lang": "en",
   "display": "standalone",
   "orientation": "any",

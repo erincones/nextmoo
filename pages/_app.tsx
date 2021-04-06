@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { ReactNode } from "react";
 import { AppProps } from "next/app";
 import Head from "next/head";
@@ -11,13 +13,26 @@ import "../styles/index.scss";
  * @param props application properties
  */
 const App = ({ Component, pageProps }: AppProps): ReactNode => {
+  // Setup service worker
+  useEffect(() => {
+    if (`serviceWorker` in navigator) {
+      window.addEventListener(`load`, () => {
+        navigator.serviceWorker.register(`/sw.js`).then(undefined, err => {
+          console.error(err);
+        });
+      }, { once: true });
+    }
+  }, []);
+
+
+  // Return application
   return (
     <>
       <Head>
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no" />
 
-        <meta name="application-name" content="Moo!" />
+        <meta name="application-name" content="Next Moo!" />
         <meta name="author" content="Erick Rincones" />
         <meta name="description" content="Another web version of cowsay powered by Next.js" />
         <meta name="generator" content="Next.js" />
@@ -28,6 +43,8 @@ const App = ({ Component, pageProps }: AppProps): ReactNode => {
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="shortcut icon" type="image/x-icon" sizes="16x16" href="/favicon.ico" />
+
+        <link rel="manifest" href="/manifest.json" />
       </Head>
 
       <Component {...pageProps} />
