@@ -5,7 +5,7 @@ export const OpenGraph = (): JSX.Element => {
   return (
     <>
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="Moo!" />
+      <meta property="og:title" content="Next Moo!" />
       <meta property="og:description" content="Another web version of cowsay powered by Next.js" />
       <meta property="og:url" content="https://nextmoo.vercel.app" />
       <meta property="og:image" content="https://nextmoo.vercel.app/cover.png" />
