@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import { ReactNode } from "react";
 import { AppProps } from "next/app";
 import Head from "next/head";
@@ -13,19 +11,6 @@ import "../styles/index.scss";
  * @param props application properties
  */
 const App = ({ Component, pageProps }: AppProps): ReactNode => {
-  // Setup service worker
-  useEffect(() => {
-    if (`serviceWorker` in navigator) {
-      window.addEventListener(`load`, () => {
-        navigator.serviceWorker.register(`/sw.js`).then(undefined, err => {
-          console.error(err);
-        });
-      }, { once: true });
-    }
-  }, []);
-
-
-  // Return application
   return (
     <>
       <Head>

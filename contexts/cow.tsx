@@ -271,4 +271,3 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
     </CowContext.Provider>
   );
 };
-

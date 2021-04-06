@@ -38,6 +38,7 @@
     "eslint": "^7.12.1",
     "eslint-plugin-react": "^7.21.5",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "next-pwa": "^5.1.4",
     "stylelint": "^13.7.2",
     "stylelint-config-recommended": "^4.0.0",
     "stylelint-scss": "^3.18.0",

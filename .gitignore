@@ -12,6 +12,10 @@
 /.next/
 /out/
 
+# workbox
+/public/sw.js*
+/public/workbox-*.js*
+
 # production
 /build
 
