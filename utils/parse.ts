@@ -89,7 +89,7 @@ export const purgeCowData = ({ message, cow, mode, eyes, tongue, wrap, action, n
  *
  * @param data Cow data
  */
-export const stringifyCowData = (cow: CowAllOptions, browser = true): string => {
+export const stringifyCowData = (cow: CowAllOptions): string => {
   // Stringify
   const query = stringify(cow as never);
 
@@ -98,7 +98,5 @@ export const stringifyCowData = (cow: CowAllOptions, browser = true): string => 
   }
 
   // Adjust
-  return browser ?
-    `?${query}`.replaceAll(`%20`, `+`).replaceAll(`.`, `%2E`) :
-    `?${query}`;
+  return `?${query}`.replaceAll(`%20`, `+`).replaceAll(`.`, `%2E`);
 };

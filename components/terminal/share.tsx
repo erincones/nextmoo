@@ -42,7 +42,7 @@ export const Share = ({ data }: ShareProps): JSX.Element => {
     const web = stringifyCowData(json);
 
     // Return share options
-    return [ `${url}/${web}`, `${api}/${get}`, post ];
+    return [ `${url}/${web}`, `${api}${get}`, post ];
   }, [ data ]);
 
 
