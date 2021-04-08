@@ -11,7 +11,7 @@ import { Terminal } from "../components/terminal";
 const Home = (): JSX.Element => {
   return (
     <>
-      <SEO title="Next Moo!" />
+      <SEO title="NextMoo!" />
 
       <CowProvider>
         <main className="flex flex-col md:flex-row-reverse md:overflow-hidden min-h-screen md:max-h-screen w-full h-full">

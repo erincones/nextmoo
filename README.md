@@ -1,4 +1,4 @@
-# Next Moo!
+# NextMoo!
 
 Web version of the classic cowsay and cowthink commands, now with an API
 endpoint.
@@ -23,7 +23,7 @@ Powered by [cowsayjs][cowsayjs].
 
 ## Website
 
-Start to create and share custom cows here: [https://nextmoo.vercel.app][nextmoo]
+Start to create and share custom cows here: https://nextmoo.vercel.app
 
 Change the fields to customize the cow and use the `share` command in the
 terminal to get the direct link to your custom cow and the `curl` commands to
@@ -37,8 +37,8 @@ see the full list.
 ## Custom website cows and API reference
 
 You can share custom cows with a direct link to the website and request custom
-cows on `text/plain` format from [https://nextmoo.vercel.app/api][nextmooapi]
-with The `GET` or `POST` methods.
+cows on `text/plain` format from https://nextmoo.vercel.app/api with The `GET`
+or `POST` methods.
 
 Use the next parameters to customize your cow:
 
@@ -72,14 +72,14 @@ body.
 
 ### Examples
 
-Link to custom web cow: <https://nextmoo.vercel.app/?message=Don%27t%20be%20sad&cow=small&mode=y>
+Link to custom web cow: <https://nextmoo.vercel.app/?message=Don%27t+be+sad&cow=small&mode=y>
 
 ---
 
 `GET` request with `curl`
 
 ```sh
-curl 'https://nextmoo.vercel.app/api?message=Whatever%20you%20want%2C%20I%20want&tongue=U'
+curl 'https://nextmoo.vercel.app/api?message=Whatever+you+want%2C+I+want&tongue=U+'
 ```
 
 Response
@@ -103,7 +103,7 @@ Response
 fetch(`https://nextmoo.vercel.app/api`, {
   method: `POST`,
   body: JSON.stringify({
-    message: `Whoever is afraid to die should not be born.\n\n\t-- The life`,
+    message: `Whoever is afraid to die, should not be born.\n\n\t-- The life`,
     cow: `dragon-and-cow`,
     action: `think`,
     mode: `p`,
@@ -117,11 +117,11 @@ fetch(`https://nextmoo.vercel.app/api`, {
 Console output
 
 ```
- ______________________________________________
-( Whoever is afraid to die should not be born. )
-(                                              )
-(         -- The life                          )
- ----------------------------------------------
+ _______________________________________________
+( Whoever is afraid to die, should not be born. )
+(                                               )
+(         -- The life                           )
+ -----------------------------------------------
                        o                    ^    /^
                         o                  / \  // \
                          o   |\___/|      /   \//  .\

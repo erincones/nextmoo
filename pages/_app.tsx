@@ -17,7 +17,7 @@ const App = ({ Component, pageProps }: AppProps): ReactNode => {
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no" />
 
-        <meta name="application-name" content="Next Moo!" />
+        <meta name="application-name" content="NextMoo!" />
         <meta name="author" content="Erick Rincones" />
         <meta name="description" content="Another web version of cowsay powered by Next.js" />
         <meta name="generator" content="Next.js" />
