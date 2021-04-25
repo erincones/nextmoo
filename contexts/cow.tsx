@@ -145,7 +145,7 @@ const setFace = (cow: CowData, { type, cursor, ...data }: EyesAction | TongueAct
   const t = /^\s*$/.test(face.tongue) ? undefined : face.tongue.padEnd(2);
   const mode = faceMode({ eyes: face.eyes, tongue: t });
 
-  if ((mode.id === `u`) && ((initial.eyes !== face.eyes) || (initial.tongue === face.tongue.trimStart()))) {
+  if ((mode.id === `u`) && ((initial.eyes !== face.eyes) || (initial.tongue !== face.tongue.trimLeft()))) {
     mode.id = `c`;
   }
 
@@ -161,18 +161,25 @@ const setFace = (cow: CowData, { type, cursor, ...data }: EyesAction | TongueAct
 const setData = (data: Readonly<Data>): CowData => {
   // Parse query string
   const cowData = normalizeCowData(data);
-  const { message = initial.message, cow = initial.cow, action } = cowData;
-  let { mode = initial.mode, eyes = initial.eyes, tongue, wrap } = cowData;
+  const { message = initial.message, cow = initial.cow, action = initial.action } = cowData;
+  let { mode = initial.mode, eyes = initial.eyes, tongue = initial.tongue, wrap } = cowData;
 
 
   // Setup face and mode
-  const face = modeFace(mode);
-  face.eyes = face.eyes || initial.eyes;
+  const face = { eyes: eyes.slice(0, 2), tongue: tongue.padEnd(2).slice(0, 2) };
+  const { eyes: e, tongue: t } = modeFace(mode);
 
-  if ((eyes !== face.eyes) || (tongue !== face.tongue)) {
+  if ((e === undefined) && (t === undefined)) {
+    mode = faceMode(face).id;
+
+    if ((mode === `u`) && ((eyes !== initial.eyes) || (face.tongue !== initial.tongue.padEnd(2)))) {
+      mode = `c`;
+    }
+  }
+  else {
     mode = `c`;
-    eyes = face.eyes !== undefined ? face.eyes : eyes;
-    tongue = face.tongue !== undefined ? face.tongue : tongue;
+    eyes = e || face.eyes;
+    tongue = t || face.tongue;
   }
 
   // Setup wrap
@@ -197,10 +204,10 @@ const setData = (data: Readonly<Data>): CowData => {
     message,
     cow,
     mode,
-    eyes: eyes.slice(0, 2),
-    tongue: (tongue || initial.tongue).slice(0, 2),
+    eyes,
+    tongue,
     wrap,
-    action: action || initial.action,
+    action,
     noWrap
   };
 };
