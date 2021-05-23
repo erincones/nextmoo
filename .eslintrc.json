@@ -24,7 +24,7 @@
   "rules": {
     "semi": "error",
     "quotes": "off",
-    "indent": [ "error", 2, { "SwitchCase": 1 } ],
+    "indent": [ "error", 2, { "SwitchCase": 1, "flatTernaryExpressions": true } ],
     "@typescript-eslint/quotes": [ "error", "backtick" ],
     "react/jsx-filename-extension": [ 1, { "extensions": [ ".jsx", ".tsx" ] } ],
     "react/jsx-uses-react": "off",
