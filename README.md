@@ -65,6 +65,10 @@ is 30 for website and 40 for API requests. For `POST` requests this field
 accepts strings and integers. To display the message exactly as provided
 (no wrap), use an empty string as wrap value, in general any invalid integer
 such as `false`, `null`, arrays or objects are assumed to be no wrap.
+  - `json`: Response in JSON format. Any truthy makes the API returns a JSON
+with two properties; `res` with a `string` of the cow, and `req` with the
+normalized requested data. If any falsy value is given, the API responds with a
+plain text with the generated cow. The falsy value is assumed by default.
 
 For website links or `GET` requests use the query string to provide the
 parameters. For `POST` requests provide the parameters as a JSON on the request

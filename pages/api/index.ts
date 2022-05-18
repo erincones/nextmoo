@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { moo } from "cowsayjs";
-import { parseBody, normalizeCowData } from "../../utils/parse";
+import { parseBody, normalizeAPICowData } from "../../utils/parse";
 
 
 /**
@@ -27,20 +27,29 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     case `OPTIONS`: res.end(); return;
 
     // Allowed methods
-    case `GET`: data = normalizeCowData(req.query); break;
-    case `POST`: data = normalizeCowData(await parseBody(req)); break;
+    case `GET`: data = normalizeAPICowData(req.query); break;
+    case `POST`: data = normalizeAPICowData(await parseBody(req)); break;
 
     // Unknown methods
-    default: res.status(405).send(moo(`405: Method not allowed`)); return;
+    default:
+      res.setHeader(`Content-Type`, `text/plain; charset=utf-8`);
+      res.status(405).send(moo(`405: Method not allowed`, { mode: `s` }));
+      return;
   }
 
 
   // Prepare options
-  const { message, ...options } = data;
+  const { message, json, ...options } = data;
 
   // Send cow
-  res.setHeader(`Content-Type`, `text/plain; charset=utf-8`);
-  res.send(`${moo(message, options)}\n`);
+  if (json) {
+    res.setHeader(`Content-Type`, `application/json; charset=utf-8`);
+    res.send({ res: moo(message, options), req: data });
+  }
+  else {
+    res.setHeader(`Content-Type`, `text/plain; charset=utf-8`);
+    res.send(`${moo(message, options)}\n`);
+  }
 };
 
 

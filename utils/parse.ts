@@ -1,5 +1,5 @@
 import { NextApiRequest } from "next";
-import { CowAllOptions } from "cowsayjs";
+import { CowAllOptions, CowAPIOptions } from "cowsayjs";
 import { stringify } from "querystring";
 
 import { CowData } from "../contexts/cow";
@@ -57,6 +57,10 @@ export const normalizeCowData = ({ message, cow = `default`, mode = `u`, eyes = 
   action: action === `think` ? `think` : `say`
 });
 
+export const normalizeAPICowData = ({ message, cow = `default`, mode = `u`, eyes = `oo`, tongue, wrap, action = `say`, json }: Data): CowAPIOptions => ({
+  ...normalizeCowData({ message, cow, mode, eyes, tongue, wrap, action }),
+  json: !!json,
+});
 
 /**
  * Remove default cow values
