@@ -1,9 +1,18 @@
 import { NextApiRequest } from "next";
-import { CowAllOptions, CowAPIOptions } from "cowsayjs";
+import { CowAllOptions } from "cowsayjs";
 import { stringify } from "querystring";
 
 import { CowData } from "../contexts/cow";
 
+/**
+ * Options for the API requests
+ *
+ * The moo options with the JSON flag.
+ */
+interface CowAPIOptions extends CowAllOptions {
+  /** JSON flag */
+  json?: boolean;
+}
 
 /**
  * Data
