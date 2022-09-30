@@ -2,7 +2,6 @@ import { SEO } from "../components/seo";
 
 import { cowsay } from "cowsayjs";
 
-
 /**
  * Error 404 page
  */

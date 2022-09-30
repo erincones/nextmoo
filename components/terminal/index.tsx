@@ -1,4 +1,14 @@
-import { useRef, useContext, useReducer, useCallback, useEffect, ChangeEvent, KeyboardEvent, SyntheticEvent, ReactNode } from "react";
+import {
+  useRef,
+  useContext,
+  useReducer,
+  useCallback,
+  useEffect,
+  ChangeEvent,
+  KeyboardEvent,
+  SyntheticEvent,
+  ReactNode,
+} from "react";
 
 import { CowAllOptions, moo } from "cowsayjs";
 import { CowContext, CowData } from "../../contexts/cow";
@@ -12,12 +22,11 @@ import { Bad } from "./bad";
 
 import { line } from "./utils";
 
-
 /**
  * History
  */
 interface CommandHistory {
-  [key: string]: [ ReadonlyArray<string>, ReadonlyArray<string> ];
+  [key: string]: [ReadonlyArray<string>, ReadonlyArray<string>];
 }
 
 /**
@@ -29,7 +38,6 @@ interface Environment {
   readonly history: Readonly<CommandHistory>;
   readonly output: ReactNode[];
 }
-
 
 /** Scroll history action */
 interface ScrollHistoryAction {
@@ -53,15 +61,14 @@ interface ExecCommandAction {
 /** Action */
 type Action = ScrollHistoryAction | HandleCommandAction | ExecCommandAction;
 
-
 /**
  * Initial environment
  */
 const initial: Environment = {
   user: `user`,
   index: 0,
-  history: { user: [ [ `` ], [ `` ] ] },
-  output: []
+  history: { user: [[``], [``]] },
+  output: [],
 };
 
 /**
@@ -69,11 +76,16 @@ const initial: Environment = {
  */
 const breakline = /\r\n|[\n\r\f\v\u2028\u2029\u0085]/;
 
-
 /**
  * End the session for the gived user
  */
-const endSession = (commandHistory: CommandHistory, user: string, index: number, workspace: string[], history: string[]): CommandHistory => {
+const endSession = (
+  commandHistory: CommandHistory,
+  user: string,
+  index: number,
+  workspace: string[],
+  history: string[]
+): CommandHistory => {
   // Restore workspace
   if (index < workspace.length) {
     workspace.splice(index, 1, history[index]);
@@ -82,7 +94,7 @@ const endSession = (commandHistory: CommandHistory, user: string, index: number,
   // Update history
   workspace.push(``);
   history.push(``);
-  commandHistory[user] = [ workspace, history ];
+  commandHistory[user] = [workspace, history];
 
   return commandHistory;
 };
@@ -90,7 +102,14 @@ const endSession = (commandHistory: CommandHistory, user: string, index: number,
 /**
  * Change the current user
  */
-const changeUser = (commandHistory: CommandHistory, newUser: string, user: string, index: number, workspace: string[], history: string[]): [ CommandHistory, string, number, string[], string[] ] => {
+const changeUser = (
+  commandHistory: CommandHistory,
+  newUser: string,
+  user: string,
+  index: number,
+  workspace: string[],
+  history: string[]
+): [CommandHistory, string, number, string[], string[]] => {
   // End session
   endSession(commandHistory, user, index, workspace, history);
   index = workspace.length;
@@ -99,15 +118,14 @@ const changeUser = (commandHistory: CommandHistory, newUser: string, user: strin
   if (newUser === user) {
     workspace.splice(index - 1, 1);
     history.splice(index - 1, 1);
-  }
-  else {
-    [ workspace, history ] = (commandHistory[newUser] || [ [ `` ], [ `` ] ]).map(list => list.slice(0, -1));
+  } else {
+    [workspace, history] = (commandHistory[newUser] || [[``], [``]]).map(
+      (list) => list.slice(0, -1)
+    );
   }
 
-  return [ commandHistory, newUser, index, workspace, history ];
+  return [commandHistory, newUser, index, workspace, history];
 };
-
-
 
 /**
  * Scroll the history
@@ -115,11 +133,14 @@ const changeUser = (commandHistory: CommandHistory, newUser: string, user: strin
  * @param env Current environment
  * @param action Scroll history action
  */
-const scrollHistory = (env: Environment, { type }: ScrollHistoryAction): Environment => {
+const scrollHistory = (
+  env: Environment,
+  { type }: ScrollHistoryAction
+): Environment => {
   const size = env.history[env.user][0].length;
   const index = env.index + (type === `HISTORY_BACKWARD` ? -1 : 1);
 
-  return ((index < 0) || (index >= size)) ? env : { ...env, index };
+  return index < 0 || index >= size ? env : { ...env, index };
 };
 
 /**
@@ -128,24 +149,31 @@ const scrollHistory = (env: Environment, { type }: ScrollHistoryAction): Environ
  * @param env Current environment
  * @param action Handle command action
  */
-const handleCommand = (env: Environment, { command, cowData, run = false }: HandleCommandAction): Environment => {
-  const [ workspace, history ] = env.history[env.user];
+const handleCommand = (
+  env: Environment,
+  { command, cowData, run = false }: HandleCommandAction
+): Environment => {
+  const [workspace, history] = env.history[env.user];
 
   const nextEnv: Environment = {
     ...env,
     history: {
       ...env.history,
       [env.user]: [
-        [ ...workspace.slice(0, env.index), command, ...workspace.slice(env.index + 1) ],
-        [ ...history ]
-      ]
-    }
+        [
+          ...workspace.slice(0, env.index),
+          command,
+          ...workspace.slice(env.index + 1),
+        ],
+        [...history],
+      ],
+    },
   };
 
   // Updated environment
-  return run || breakline.test(command) ?
-    execCommand(nextEnv, { cowData } as ExecCommandAction) :
-    nextEnv;
+  return run || breakline.test(command)
+    ? execCommand(nextEnv, { cowData } as ExecCommandAction)
+    : nextEnv;
 };
 
 /**
@@ -154,28 +182,36 @@ const handleCommand = (env: Environment, { command, cowData, run = false }: Hand
  * @param env Current environment
  * @param action Execute command action
  */
-const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environment => {
+const execCommand = (
+  env: Environment,
+  { cowData }: ExecCommandAction
+): Environment => {
   // Parse input
   const commandHistory = { ...env.history };
-  let [ workspace, history ] = env.history[env.user].map(list => list.slice(0, -1));
+  let [workspace, history] = env.history[env.user].map((list) =>
+    list.slice(0, -1)
+  );
 
   const input = env.history[env.user][0][env.index].split(breakline);
-  const output = [ ...env.output ];
+  const output = [...env.output];
   let user = env.user;
   let index = env.index;
 
   // Remove last empty command
-  if ((input.length > 1) && (input[input.length - 1].length === 0)) {
+  if (input.length > 1 && input[input.length - 1].length === 0) {
     input.pop();
   }
 
-
   // Interprete input
-  input.forEach(command => {
+  input.forEach((command) => {
     // Parse command
     let match = command.trimLeft().match(/^\s*(\S+)(?:\s+(.+))?\s*$/);
     let key = output.length;
-    output.push(<Prompt key={key++} user={user} path="moo" className={line}>{command}</Prompt>);
+    output.push(
+      <Prompt key={key++} user={user} path="moo" className={line}>
+        {command}
+      </Prompt>
+    );
 
     if (match === null) {
       return;
@@ -185,29 +221,41 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
     history.push(command);
     workspace.push(command);
 
-
     // Check sudo
-    let [, bin, args = `` ] = match;
+    let [, bin, args = ``] = match;
     const sudo = bin === `sudo`;
 
     if (sudo) {
       while (bin === `sudo`) {
         match = args.trimLeft().match(/^\s*(\S+)(?:\s+(.+))?\s*$/);
 
-        if (match !== null) ([, bin, args = `` ] = match);
+        if (match !== null) [, bin, args = ``] = match;
         else return;
       }
     }
 
-
     // Execute command
     switch (bin) {
       // Simple commands
-      case `clear`: output.splice(0, output.length); return;
-      case `echo`:  output.push(<pre key={key} className={line}>{/\S/.test(args) ? args.trim() : `\n`}</pre>); return;
-      case `help`:  output.push(<Help key={key} />); return;
-      case `ls`:    output.push(<Ls key={key} />); return;
-      case `share`: output.push(<Share key={key} data={cowData} />); return;
+      case `clear`:
+        output.splice(0, output.length);
+        return;
+      case `echo`:
+        output.push(
+          <pre key={key} className={line}>
+            {/\S/.test(args) ? args.trim() : `\n`}
+          </pre>
+        );
+        return;
+      case `help`:
+        output.push(<Help key={key} />);
+        return;
+      case `ls`:
+        output.push(<Ls key={key} />);
+        return;
+      case `share`:
+        output.push(<Share key={key} data={cowData} />);
+        return;
 
       // History
       case `history`:
@@ -217,26 +265,59 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
 
           workspace.push(``);
           history.push(``);
-        }
-        else output.push(<History key={key} workspace={workspace} history={history} />);
+        } else
+          output.push(
+            <History key={key} workspace={workspace} history={history} />
+          );
         return;
 
       // End session and change to the initial user
-      case `exit`: [ , user, index, workspace, history ] = changeUser(commandHistory, initial.user, user, index, history, workspace);
+      case `exit`:
+        [, user, index, workspace, history] = changeUser(
+          commandHistory,
+          initial.user,
+          user,
+          index,
+          history,
+          workspace
+        );
         return;
 
       // Super user
       case `su`:
         // End session and change to the root user
-        if (sudo) [ , user, index, workspace, history ] = changeUser(commandHistory, `root`, user, index, history, workspace);
-        else output.push(<Bad key={key} shell="nextmoo" command={bin} message="Permission denied" />);
+        if (sudo)
+          [, user, index, workspace, history] = changeUser(
+            commandHistory,
+            `root`,
+            user,
+            index,
+            history,
+            workspace
+          );
+        else
+          output.push(
+            <Bad
+              key={key}
+              shell="nextmoo"
+              command={bin}
+              message="Permission denied"
+            />
+          );
         return;
 
       // Unknown
-      default: output.push(<Bad key={key} shell="nextmoo" command={bin} message="Command not found" />);
+      default:
+        output.push(
+          <Bad
+            key={key}
+            shell="nextmoo"
+            command={bin}
+            message="Command not found"
+          />
+        );
     }
   });
-
 
   // Updated environment
   endSession(commandHistory, user, index, workspace, history);
@@ -245,10 +326,9 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
     user,
     index: commandHistory[user][0].length - 1,
     history: commandHistory,
-    output
+    output,
   };
 };
-
 
 /**
  * Environment reducer function
@@ -260,9 +340,12 @@ const execCommand = (env: Environment, { cowData }: ExecCommandAction): Environm
 const reducer = (state: Environment, action: Action): Environment => {
   switch (action.type) {
     case `HISTORY_BACKWARD`:
-    case `HISTORY_FORWARD`: return scrollHistory(state, action);
-    case `HANDLE_COMMAND`: return handleCommand(state, action);
-    case `EXEC_COMMAND`: return execCommand(state, action);
+    case `HISTORY_FORWARD`:
+      return scrollHistory(state, action);
+    case `HANDLE_COMMAND`:
+      return handleCommand(state, action);
+    case `EXEC_COMMAND`:
+      return execCommand(state, action);
   }
 };
 
@@ -272,9 +355,11 @@ const reducer = (state: Environment, action: Action): Environment => {
  * @param state Initial environment
  */
 const initializer = (env: Environment): Environment => {
-  return handleCommand(env, { command: `help`, run: true } as HandleCommandAction);
+  return handleCommand(env, {
+    command: `help`,
+    run: true,
+  } as HandleCommandAction);
 };
-
 
 /**
  * Terminal component
@@ -287,13 +372,18 @@ export const Terminal = (): JSX.Element => {
   const prompt = useRef<HTMLPreElement>(null);
   const textArea = useRef<HTMLTextAreaElement>(null);
 
-  const [ cowData ] = useContext(CowContext);
-  const [ { user, output, index, history }, dispatch ] = useReducer(reducer, initial, initializer);
-
+  const [cowData] = useContext(CowContext);
+  const [{ user, output, index, history }, dispatch] = useReducer(
+    reducer,
+    initial,
+    initializer
+  );
 
   // Terminal output
   const path = `moo`;
-  const command = `${` `.repeat(rawPrompt({ user, path }).length)}${history[user][0][index]}`;
+  const command = `${` `.repeat(rawPrompt({ user, path }).length)}${
+    history[user][0][index]
+  }`;
 
   // Cow options
   const cow: CowAllOptions = {
@@ -303,28 +393,37 @@ export const Terminal = (): JSX.Element => {
     eyes: cowData.eyes.padEnd(2),
     tongue: cowData.tongue.padEnd(2),
     wrap: cowData.noWrap ? false : cowData.wrap,
-    action: cowData.action
+    action: cowData.action,
   };
-
 
   // Scroll to bottom
   const scrollBottom = useCallback(() => {
-    const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
+    const main =
+      screen.width < 768
+        ? document.documentElement
+        : (terminal.current as HTMLElement);
     main.scrollTop = main.scrollHeight;
   }, []);
 
   // Change Handler
-  const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    const cursor = e.currentTarget.selectionStart;
-    let value = e.currentTarget.value;
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      const cursor = e.currentTarget.selectionStart;
+      let value = e.currentTarget.value;
 
-    if (breakline.test(value[cursor - 1]) && (value.length !== cursor)) {
-      value = `${value.slice(0, cursor - 1)}${value.slice(cursor)}\n`;
-    }
+      if (breakline.test(value[cursor - 1]) && value.length !== cursor) {
+        value = `${value.slice(0, cursor - 1)}${value.slice(cursor)}\n`;
+      }
 
-    const padding = (prompt.current as HTMLPreElement).innerText.length;
-    dispatch({ type: `HANDLE_COMMAND`, command: value.slice(padding), cowData });
-  }, [ cowData ]);
+      const padding = (prompt.current as HTMLPreElement).innerText.length;
+      dispatch({
+        type: `HANDLE_COMMAND`,
+        command: value.slice(padding),
+        cowData,
+      });
+    },
+    [cowData]
+  );
 
   // Key down handler
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -341,20 +440,25 @@ export const Terminal = (): JSX.Element => {
   }, []);
 
   // Select handler
-  const handleSelect = useCallback((e: SyntheticEvent<HTMLTextAreaElement>) => {
-    const padding = (prompt.current as HTMLPreElement).innerText.length;
+  const handleSelect = useCallback(
+    (e: SyntheticEvent<HTMLTextAreaElement>) => {
+      const padding = (prompt.current as HTMLPreElement).innerText.length;
 
-    // Fix selection start
-    if (e.currentTarget.selectionStart < padding) {
-      e.currentTarget.selectionStart = padding;
-    }
+      // Fix selection start
+      if (e.currentTarget.selectionStart < padding) {
+        e.currentTarget.selectionStart = padding;
+      }
 
-    // Scroll to bottom if is in the end
-    if ((e.currentTarget.value.length > padding) && (e.currentTarget.value.length === e.currentTarget.selectionStart)) {
-      scrollBottom();
-    }
-  }, [ scrollBottom ]);
-
+      // Scroll to bottom if is in the end
+      if (
+        e.currentTarget.value.length > padding &&
+        e.currentTarget.value.length === e.currentTarget.selectionStart
+      ) {
+        scrollBottom();
+      }
+    },
+    [scrollBottom]
+  );
 
   // Fix input height
   useEffect(() => {
@@ -363,7 +467,10 @@ export const Terminal = (): JSX.Element => {
       first.current.input = false;
       const ps1 = prompt.current as HTMLPreElement;
       const input = textArea.current as HTMLTextAreaElement;
-      const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
+      const main =
+        screen.width < 768
+          ? document.documentElement
+          : (terminal.current as HTMLElement);
 
       // Fit height
       if (main.clientHeight < main.scrollHeight) {
@@ -378,10 +485,16 @@ export const Terminal = (): JSX.Element => {
     // Other renders
     else {
       const input = textArea.current as HTMLTextAreaElement;
-      const main = screen.width < 768 ? document.documentElement : terminal.current as HTMLElement;
+      const main =
+        screen.width < 768
+          ? document.documentElement
+          : (terminal.current as HTMLElement);
 
       // Container overflow
-      if ((main.clientHeight < main.scrollHeight) || (input.clientHeight < input.scrollHeight)) {
+      if (
+        main.clientHeight < main.scrollHeight ||
+        input.clientHeight < input.scrollHeight
+      ) {
         const ps1 = prompt.current as HTMLPreElement;
 
         // Shrink
@@ -391,7 +504,8 @@ export const Terminal = (): JSX.Element => {
 
         // Grow
         else {
-          const height = Math.ceil(input.scrollHeight / ps1.clientHeight) * ps1.clientHeight;
+          const height =
+            Math.ceil(input.scrollHeight / ps1.clientHeight) * ps1.clientHeight;
           input.style.height = `${height}px`;
         }
       }
@@ -405,12 +519,14 @@ export const Terminal = (): JSX.Element => {
   useEffect(() => {
     if (first.current.output) first.current.output = false;
     else scrollBottom();
-  }, [ scrollBottom, output.length ]);
-
+  }, [scrollBottom, output.length]);
 
   // Return terminal component
   return (
-    <section ref={terminal} className="flex flex-col flex-grow cursor-text overflow-auto px-px w-full md:w-7/12">
+    <section
+      ref={terminal}
+      className="flex flex-col flex-grow cursor-text overflow-auto px-px w-full md:w-7/12"
+    >
       {/* Cow */}
       <pre className="md:flex-shrink-0 select-all whitespace-pre overflow-x-auto">
         {moo(cow)}
@@ -423,8 +539,24 @@ export const Terminal = (): JSX.Element => {
 
         {/* Input */}
         <div className="relative flex flex-grow">
-          <Prompt ref={prompt} user={user} path={path} className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap" />
-          <textarea ref={textArea} rows={1} value={command} autoCapitalize="none" spellCheck={false} onChange={handleChange} onKeyDown={handleKeyDown} onSelect={handleSelect} aria-label="input" className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full" />
+          <Prompt
+            ref={prompt}
+            user={user}
+            path={path}
+            className="absolute top-0 left-0 bg-black break-all whitespace-pre-wrap"
+          />
+          <textarea
+            ref={textArea}
+            rows={1}
+            value={command}
+            autoCapitalize="none"
+            spellCheck={false}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onSelect={handleSelect}
+            aria-label="input"
+            className="flex-grow bg-black text-white break-all whitespace-pre-wrap overflow-visible focus:outline-none resize-none w-full"
+          />
         </div>
       </div>
     </section>

@@ -1,49 +1,9 @@
 {
-  "env": {
-    "es6": true,
-    "node": true,
-    "browser": true
-  },
-  "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module"
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  },
-  "parser": "@typescript-eslint/parser",
   "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended"
-  ],
-  "plugins": [
-    "react-hooks"
+    "next",
+    "plugin:prettier/recommended"
   ],
   "rules": {
-    "semi": "error",
-    "quotes": "off",
-    "indent": [ "error", 2, { "SwitchCase": 1, "flatTernaryExpressions": true } ],
-    "@typescript-eslint/quotes": [ "error", "backtick" ],
-    "react/jsx-filename-extension": [ 1, { "extensions": [ ".jsx", ".tsx" ] } ],
-    "react/jsx-uses-react": "off",
-    "react/react-in-jsx-scope": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
-  },
-  "overrides": [
-    {
-      "files": [ "*.ts", "*.tsx" ],
-      "extends": [
-        "plugin:@typescript-eslint/recommended"
-      ],
-      "plugins": [
-        "@typescript-eslint"
-      ],
-      "rules": {
-        "@typescript-eslint/no-unused-vars": [ "error" ]
-      }
-    }
-  ]
+    "quotes": [ "error", "backtick" ]
+  }
 }

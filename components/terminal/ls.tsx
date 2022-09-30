@@ -1,11 +1,9 @@
 import { ul, item } from "./utils";
 
-
 /**
  * Folder style
  */
 const folder = `font-bold text-blue-light ${item}`;
-
 
 /**
  * Ls component

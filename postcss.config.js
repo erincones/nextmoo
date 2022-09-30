@@ -8,8 +8,8 @@ module.exports = {
       {
         stage: 3,
         features: { "custom-properties": false },
-        autoprefixer: { flexbox: `no-2009` }
-      }
-    ]
-  ]
+        autoprefixer: { flexbox: `no-2009` },
+      },
+    ],
+  ],
 };

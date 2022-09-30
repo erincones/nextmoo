@@ -1,11 +1,9 @@
 import { line, ul, item, repo } from "./utils";
 
-
 /**
  * README URL
  */
 const readme = `${repo}#readme`;
-
 
 /**
  * Help component
@@ -13,10 +11,20 @@ const readme = `${repo}#readme`;
 export const Help = (): JSX.Element => {
   return (
     <pre className={line}>
-      NextMoo! Developed by Erick Rincones. Special thanks to Aury Rincones.{`\n`}
-      For more details visit: <a href={readme} target="noopener noreferrer" className="underline focus:outline-none">{readme}</a>{`\n`}
+      NextMoo! Developed by Erick Rincones. Special thanks to Aury Rincones.
       {`\n`}
-      These shell commands are defined internally. Type `help&apos; to see this list.{`\n`}
+      For more details visit:{` `}
+      <a
+        href={readme}
+        target="noopener noreferrer"
+        className="underline focus:outline-none"
+      >
+        {readme}
+      </a>
+      {`\n`}
+      {`\n`}
+      These shell commands are defined internally. Type `help&apos; to see this
+      list.{`\n`}
       {`\n`}
       <ul className={ul}>
         <li className={item}>clear</li>
@@ -28,7 +36,15 @@ export const Help = (): JSX.Element => {
         <li className={item}>sudo [COMMAND]</li>
       </ul>
       {`\n`}
-      Powered by <a href="https://www.npmjs.com/package/cowsayjs" target="noopener noreferrer" className="underline focus:outline-none">cowsayjs</a>.{`\n`}
+      Powered by{` `}
+      <a
+        href="https://www.npmjs.com/package/cowsayjs"
+        target="noopener noreferrer"
+        className="underline focus:outline-none"
+      >
+        cowsayjs
+      </a>
+      .{`\n`}
     </pre>
   );
 };

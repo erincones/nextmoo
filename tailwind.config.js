@@ -7,16 +7,7 @@ const terminal = require(`./tailwind-plugins/terminal`);
  * @type {import("tailwindcss/tailwind-config").TailwindConfig}
  */
 module.exports = {
-  purge: {
-    mode: `all`,
-    content: [
-      `pages/**/*.{js,ts,jsx,tsx}`,
-      `components/**/*.{js,ts,jsx,tsx}`
-    ],
-    options: {
-      keyframes: true,
-    }
-  },
+  content: [`pages/**/*.{js,ts,jsx,tsx}`, `components/**/*.{js,ts,jsx,tsx}`],
   theme: {
     colors: {
       transparent: `transparent`,
@@ -24,39 +15,39 @@ module.exports = {
       white: `#ffffff`,
       gray: {
         default: `#555555`,
-        light: `#aaaaaa`
+        light: `#aaaaaa`,
       },
       red: {
         default: `#aa0000`,
-        light: `#ff5555`
+        light: `#ff5555`,
       },
       green: {
         default: `#00aa00`,
-        light: `#55ff55`
+        light: `#55ff55`,
       },
       blue: {
         default: `#0000aa`,
-        light: `#5555ff`
+        light: `#5555ff`,
       },
       cyan: {
         default: `#00aaaa`,
-        light: `#55ffff`
+        light: `#55ffff`,
       },
       magenta: {
         default: `#aa00aa`,
-        light: `#ff55ff`
+        light: `#ff55ff`,
       },
       yellow: {
         default: `#aa5500`,
-        light: `#ffff55`
-      }
+        light: `#ffff55`,
+      },
     },
     extend: {
       fontFamily: {
-        mono: [ `"DejaVu Sans Mono"`, ...fontFamily.mono ]
+        mono: [`"DejaVu Sans Mono"`, ...fontFamily.mono],
       },
       lineHeight: {
-        terminal: `1.1875rem`
+        terminal: `1.1875rem`,
       },
       spacing: {
         ch: `1ch`,
@@ -65,27 +56,25 @@ module.exports = {
         "3/7": `42.8571%`,
         "4/7": `57.1429%`,
         "5/7": `71.4286%`,
-        "6/7": `85.7143%`
+        "6/7": `85.7143%`,
       },
       width: {
         "full-3": `calc(100% - 0.75rem)`,
-        "max-content": `max-content`
+        "max-content": `max-content`,
       },
       minHeight: {
-        "10": `2.5rem`,
-        "20": `5rem`,
-        "55": `13.75rem`
-      }
-    }
+        10: `2.5rem`,
+        20: `5rem`,
+        55: `13.75rem`,
+      },
+    },
   },
   variants: {
-    textColor: [ `responsive`, `hover`, `focus`, `disabled` ],
-    cursor: [ `disabled` ]
+    textColor: [`responsive`, `hover`, `focus`, `disabled`],
+    cursor: [`disabled`],
   },
-  plugins: [
-    terminal
-  ],
+  plugins: [terminal],
   corePlugins: {
-    animation: false
-  }
+    animation: false,
+  },
 };

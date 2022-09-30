@@ -1,11 +1,6 @@
 module.exports = {
-  extends: [ `stylelint-config-recommended` ],
-  plugins: [ `stylelint-scss` ],
+  extends: [ `stylelint-prettier/recommended` ],
   rules: {
-    "declaration-block-trailing-semicolon": null,
-    "no-descending-specificity": null,
-    "string-quotes": `double`,
-    "at-rule-no-unknown": null,
     "scss/at-rule-no-unknown": [
       true,
       {

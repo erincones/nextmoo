@@ -1,4 +1,8 @@
 {
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact"
+  ],
   "editor.tabSize": 2,
   "css.validate": false,
   "less.validate": false,

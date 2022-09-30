@@ -1,6 +1,5 @@
 import { line } from "./utils";
 
-
 /**
  * History component properties
  */
@@ -8,7 +7,6 @@ interface HistoryProps {
   readonly workspace: string[];
   readonly history: string[];
 }
-
 
 /**
  * History component

@@ -247,7 +247,7 @@ export const CowContext = createContext<[ CowData, Dispatch<Action> ]>([ initial
  */
 export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
   const first = useRef(true);
-  const [ cowData, dispatch ] = useReducer(reducer, undefined as never);
+  const [ cowData, dispatch ] = useReducer(reducer, initial);
 
 
   // Query string management

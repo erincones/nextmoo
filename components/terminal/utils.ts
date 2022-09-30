@@ -16,7 +16,10 @@ export const item = `truncate pl-ch`;
 /**
  * Web url
  */
-export const url = typeof window !== `undefined` ? location.origin : `https://nextmoo.vercel.app`;
+export const url =
+  typeof window !== `undefined`
+    ? location.origin
+    : `https://nextmoo.vercel.app`;
 
 /**
  * Repository URL

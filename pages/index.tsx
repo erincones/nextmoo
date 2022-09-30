@@ -4,7 +4,6 @@ import { SEO } from "../components/seo";
 import { Controls } from "../components/controls";
 import { Terminal } from "../components/terminal";
 
-
 /**
  * Home component
  */
@@ -15,8 +14,8 @@ const Home = (): JSX.Element => {
 
       <CowProvider>
         <main className="flex flex-col md:flex-row-reverse md:overflow-hidden min-h-screen md:max-h-screen w-full h-full">
-          <Controls/>
-          <Terminal/>
+          <Controls />
+          <Terminal />
         </main>
       </CowProvider>
     </>
