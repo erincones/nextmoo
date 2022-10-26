@@ -10,7 +10,7 @@ import { CowContext } from "../../contexts/cow";
 
 import { corral } from "cowsayjs/cows";
 import { modes } from "cowsayjs/lib/mode";
-import { CowAction } from "cowsayjs/lib/box";
+import { BoxAction } from "cowsayjs/lib/box";
 
 import { Radio } from "./radio";
 import { Spinbox } from "./spinbox";
@@ -24,6 +24,7 @@ import { Checkbox } from "./checkbox";
 export const Controls = (): JSX.Element => {
   const [cowData, dispatch] = useContext(CowContext);
   const { message, cow, mode, eyes, tongue, wrap, noWrap, action } = cowData;
+  const cowName = typeof cow === `string` ? cow : cow.name;
 
   // Cow options
   const cowOptions = useMemo(
@@ -58,7 +59,7 @@ export const Controls = (): JSX.Element => {
 
   // Action change handler
   const handleActionChange = useCallback(
-    (action: CowAction): void => {
+    (action: BoxAction): void => {
       dispatch({ type: `SET_ACTION`, action });
     },
     [dispatch]
@@ -148,8 +149,8 @@ export const Controls = (): JSX.Element => {
               </legend>
               <select
                 id="cow"
-                value={cow}
-                title={cow}
+                value={cowName}
+                title={cowName}
                 onChange={handleCowChange}
                 className="bg-transparent focus:bg-white text-white focus:text-black align-middle arrow-down-white focus:arrow-down-black bg-right bg-no-repeat focus:outline-none appearance-none pr-3 w-full"
               >

@@ -1,14 +1,25 @@
-import { createContext, useRef, useReducer, useEffect, Dispatch, ReactNode } from "react";
+import {
+  createContext,
+  useRef,
+  useReducer,
+  useEffect,
+  Dispatch,
+  ReactNode,
+} from "react";
 import { parse } from "querystring";
 
 import { CowAllOptions } from "cowsayjs";
 import { modeFace, faceMode, CowFace } from "cowsayjs/lib/mode";
-import { CowAction } from "cowsayjs/lib/box";
+import { BoxAction } from "cowsayjs/lib/box";
 
-import { normalizeCowData, purgeCowData, stringifyCowData, Data } from "../utils/parse";
+import {
+  normalizeCowData,
+  purgeCowData,
+  stringifyCowData,
+  Data,
+} from "../utils/parse";
 
 import { Splash } from "../components/seo/splash";
-
 
 /**
  * State
@@ -18,14 +29,12 @@ export interface CowData extends Required<CowAllOptions> {
   readonly noWrap: boolean;
 }
 
-
 /**
  * Cow provider properties
  */
 interface CowProviderProps {
   readonly children: ReactNode;
 }
-
 
 /** Message action */
 interface MessageAction {
@@ -68,7 +77,7 @@ interface WrapAction {
 /** Action action */
 interface ActionAction {
   readonly type: `SET_ACTION`;
-  readonly action: CowAction;
+  readonly action: BoxAction;
 }
 
 /** No wrap action */
@@ -84,8 +93,16 @@ interface DataAction {
 }
 
 /** Action */
-type Action = MessageAction | CowNameAction | ModeAction | EyesAction | TongueAction | WrapAction | ActionAction | NoWrapAction | DataAction;
-
+type Action =
+  | MessageAction
+  | CowNameAction
+  | ModeAction
+  | EyesAction
+  | TongueAction
+  | WrapAction
+  | ActionAction
+  | NoWrapAction
+  | DataAction;
 
 /**
  * Initial cow
@@ -98,9 +115,8 @@ const initial: CowData = {
   tongue: ``,
   wrap: 30,
   action: `say`,
-  noWrap: false
+  noWrap: false,
 };
-
 
 /**
  * Set the cow face and mode
@@ -115,7 +131,7 @@ const setMode = (cow: CowData, mode: string): CowData => {
     ...cow,
     mode,
     eyes: eyes || initial.eyes,
-    tongue: tongue || initial.tongue
+    tongue: tongue || initial.tongue,
   };
 };
 
@@ -125,27 +141,34 @@ const setMode = (cow: CowData, mode: string): CowData => {
  * @param cow Current cow
  * @param face Face data
  */
-const setFace = (cow: CowData, { type, cursor, ...data }: EyesAction | TongueAction): CowData => {
+const setFace = (
+  cow: CowData,
+  { type, cursor, ...data }: EyesAction | TongueAction
+): CowData => {
   // Select property
   const { eyes = cow.eyes, tongue = cow.tongue } = data as Required<CowFace>;
   let prop = type === `SET_EYES` ? eyes : tongue;
 
   if (prop.length > 2) {
-    prop = (cursor !== null) && (cursor > 2) ?
-      prop.slice(prop.length - 2, prop.length) :
-      prop.slice(0, 2);
+    prop =
+      cursor !== null && cursor > 2
+        ? prop.slice(prop.length - 2, prop.length)
+        : prop.slice(0, 2);
   }
 
-  const face = type === `SET_EYES` ?
-    { eyes: prop, tongue: cow.tongue } :
-    { eyes: cow.eyes, tongue: prop };
-
+  const face =
+    type === `SET_EYES`
+      ? { eyes: prop, tongue: cow.tongue }
+      : { eyes: cow.eyes, tongue: prop };
 
   // Check mode
   const t = /^\s*$/.test(face.tongue) ? undefined : face.tongue.padEnd(2);
   const mode = faceMode({ eyes: face.eyes, tongue: t });
 
-  if ((mode.id === `u`) && ((initial.eyes !== face.eyes) || (initial.tongue !== face.tongue.trimLeft()))) {
+  if (
+    mode.id === `u` &&
+    (initial.eyes !== face.eyes || initial.tongue !== face.tongue.trimLeft())
+  ) {
     mode.id = `c`;
   }
 
@@ -161,22 +184,32 @@ const setFace = (cow: CowData, { type, cursor, ...data }: EyesAction | TongueAct
 const setData = (data: Readonly<Data>): CowData => {
   // Parse query string
   const cowData = normalizeCowData(data);
-  const { message = initial.message, cow = initial.cow, action = initial.action } = cowData;
-  let { mode = initial.mode, eyes = initial.eyes, tongue = initial.tongue, wrap } = cowData;
-
+  const {
+    message = initial.message,
+    cow = initial.cow,
+    action = initial.action,
+  } = cowData;
+  let {
+    mode = initial.mode,
+    eyes = initial.eyes,
+    tongue = initial.tongue,
+    wrap,
+  } = cowData;
 
   // Setup face and mode
   const face = { eyes: eyes.slice(0, 2), tongue: tongue.padEnd(2).slice(0, 2) };
   const { eyes: e, tongue: t } = modeFace(mode);
 
-  if ((e === undefined) && (t === undefined)) {
+  if (e === undefined && t === undefined) {
     mode = faceMode(face).id;
 
-    if ((mode === `u`) && ((eyes !== initial.eyes) || (face.tongue !== initial.tongue.padEnd(2)))) {
+    if (
+      mode === `u` &&
+      (eyes !== initial.eyes || face.tongue !== initial.tongue.padEnd(2))
+    ) {
       mode = `c`;
     }
-  }
-  else {
+  } else {
     mode = `c`;
     eyes = e || face.eyes;
     tongue = t || face.tongue;
@@ -186,8 +219,11 @@ const setData = (data: Readonly<Data>): CowData => {
   let noWrap = false;
 
   switch (typeof wrap) {
-    case `number`: break;
-    case `string`: wrap = parseInt(wrap); break;
+    case `number`:
+      break;
+    case `string`:
+      wrap = parseInt(wrap);
+      break;
     default:
       noWrap = wrap === true;
       wrap = initial.wrap;
@@ -208,10 +244,9 @@ const setData = (data: Readonly<Data>): CowData => {
     tongue,
     wrap,
     action,
-    noWrap
+    noWrap,
   };
 };
-
 
 /**
  * Cow reducer function
@@ -222,23 +257,44 @@ const setData = (data: Readonly<Data>): CowData => {
  */
 const reducer = (state: CowData, action: Action): CowData => {
   switch (action.type) {
-    case `SET_MESSAGE`: return action.message !== state.message ? { ...state, message: action.message } : state;
-    case `SET_COW`:     return action.cow     !== state.cow     ? { ...state, cow:     action.cow }     : state;
-    case `SET_WRAP`:    return action.wrap    !== state.wrap    ? { ...state, wrap:    action.wrap }    : state;
-    case `SET_NO_WRAP`: return action.noWrap  !== state.noWrap  ? { ...state, noWrap:  action.noWrap }  : state;
-    case `SET_ACTION`:  return action.action  !== state.action  ? { ...state, action:  action.action }  : state;
-    case `SET_MODE`:    return action.mode    !== state.mode    ? setMode(state, action.mode) : state;
-    case `SET_EYES`:    return action.eyes    !== state.eyes    ? setFace(state, action) : state;
-    case `SET_TONGUE`:  return action.tongue  !== state.tongue  ? setFace(state, action) : state;
-    case `SET_DATA`:    return setData(action.data);
+    case `SET_MESSAGE`:
+      return action.message !== state.message
+        ? { ...state, message: action.message }
+        : state;
+    case `SET_COW`:
+      return action.cow !== state.cow ? { ...state, cow: action.cow } : state;
+    case `SET_WRAP`:
+      return action.wrap !== state.wrap
+        ? { ...state, wrap: action.wrap }
+        : state;
+    case `SET_NO_WRAP`:
+      return action.noWrap !== state.noWrap
+        ? { ...state, noWrap: action.noWrap }
+        : state;
+    case `SET_ACTION`:
+      return action.action !== state.action
+        ? { ...state, action: action.action }
+        : state;
+    case `SET_MODE`:
+      return action.mode !== state.mode ? setMode(state, action.mode) : state;
+    case `SET_EYES`:
+      return action.eyes !== state.eyes ? setFace(state, action) : state;
+    case `SET_TONGUE`:
+      return action.tongue !== state.tongue ? setFace(state, action) : state;
+    case `SET_DATA`:
+      return setData(action.data);
   }
 };
-
 
 /**
  * Cow context
  */
-export const CowContext = createContext<[ CowData, Dispatch<Action> ]>([ initial, () => { return; } ]);
+export const CowContext = createContext<[CowData, Dispatch<Action>]>([
+  initial,
+  () => {
+    return;
+  },
+]);
 
 /**
  * Cow provider
@@ -247,8 +303,7 @@ export const CowContext = createContext<[ CowData, Dispatch<Action> ]>([ initial
  */
 export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
   const first = useRef(true);
-  const [ cowData, dispatch ] = useReducer(reducer, initial);
-
+  const [cowData, dispatch] = useReducer(reducer, initial);
 
   // Query string management
   useEffect(() => {
@@ -257,7 +312,10 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
       first.current = false;
       const query = location.search.slice(1);
 
-      dispatch({ type: `SET_DATA`, data: query.length !== 0 ? parse(query) : initial });
+      dispatch({
+        type: `SET_DATA`,
+        data: query.length !== 0 ? parse(query) : initial,
+      });
     }
 
     // Update the query string with the current cow
@@ -267,14 +325,17 @@ export const CowProvider = ({ children }: CowProviderProps): JSX.Element => {
       if (data.message === undefined) data.message = ``;
       else if (data.message === `moo!`) delete data.message;
 
-      history.replaceState(``, ``, `${location.origin}/${stringifyCowData(data)}`);
+      history.replaceState(
+        ``,
+        ``,
+        `${location.origin}/${stringifyCowData(data)}`
+      );
     }
-  }, [ cowData ]);
-
+  }, [cowData]);
 
   // Return the cow provider
   return (
-    <CowContext.Provider value={[ cowData, dispatch ]}>
+    <CowContext.Provider value={[cowData, dispatch]}>
       {cowData !== undefined ? children : <Splash />}
     </CowContext.Provider>
   );
